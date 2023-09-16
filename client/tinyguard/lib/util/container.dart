@@ -1,6 +1,6 @@
 import 'package:tinyguard/service/esp32_cam.dart';
 
-enum Component { esp32CameraService }
+enum Component { esp32Camera }
 
 class ComponentContainer {
   static final ComponentContainer _instance = ComponentContainer._();
@@ -16,9 +16,7 @@ class ComponentContainer {
   }
 
   _init() async {
-    container = {
-      Component.esp32CameraService: await FakeEsp32CameraService.create()
-    };
+    container = {Component.esp32Camera: await FakeEsp32Camera.create()};
   }
 
   late Map<Component, dynamic> container;
