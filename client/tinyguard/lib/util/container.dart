@@ -1,6 +1,7 @@
+import 'package:tinyguard/service/blueooth_util.dart';
 import 'package:tinyguard/service/esp32_cam.dart';
 
-enum Component { esp32Camera }
+enum Component { esp32Camera, bluetoothUtil }
 
 class ComponentContainer {
   static final ComponentContainer _instance = ComponentContainer._();
@@ -16,7 +17,10 @@ class ComponentContainer {
   }
 
   _init() async {
-    container = {Component.esp32Camera: await FakeEsp32Camera.create()};
+    container = {
+      Component.esp32Camera: await FakeEsp32Camera.create(),
+      Component.bluetoothUtil: ImplementedBluetoothUtil()
+    };
   }
 
   late Map<Component, dynamic> container;
