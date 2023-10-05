@@ -3,9 +3,9 @@ import 'package:flutter/material.dart';
 enum ConnectionStatus { disconnect, connecting, connected }
 
 abstract class Esp32Camera {
-  String? get streamingUrl;
-  String? get bluetoothAddress;
-  set bluetoothAddress(String? address);
+  String? get streamingUrl; // url
+  String? get bluetoothAddress; // bluetooth address
+  set bluetoothAddress(String? address); // set bluetooth address
   bool get isActive;
 
   ConnectionStatus get bluetoothStatus;

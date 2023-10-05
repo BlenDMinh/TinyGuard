@@ -1,4 +1,3 @@
-import 'package:tinyguard/service/blueooth_util.dart';
 import 'package:tinyguard/service/esp32_cam.dart';
 
 enum Component { esp32Camera, bluetoothUtil }
@@ -19,7 +18,7 @@ class ComponentContainer {
   _init() async {
     container = {
       Component.esp32Camera: await FakeEsp32Camera.create(),
-      Component.bluetoothUtil: ImplementedBluetoothUtil()
+      //Component.bluetoothUtil: ImplementedBluetoothUtil()
     };
   }
 
