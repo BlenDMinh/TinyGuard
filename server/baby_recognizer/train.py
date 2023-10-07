@@ -24,21 +24,24 @@ from utils import (
 from loss import YoloLoss
 from config import config
 
+import csv
+
 
 seed = 123
 torch.manual_seed(seed)
 
-# Hyperparameters etc. 
+# Hyperparameters etc.
 LEARNING_RATE = 2e-5
-# DEVICE = "cuda" if torch.cuda.is_available else "cpu"
-DEVICE = "cpu"
-BATCH_SIZE = 8 # 64 in original paper but I don't have that much vram, grad accum?
+DEVICE = "cuda" if torch.cuda.is_available else "cpu"
+# DEVICE = "cpu"
+BATCH_SIZE = 32  # 64 in original paper but I don't have that much vram, grad accum?
 WEIGHT_DECAY = 0
-EPOCHS = 1000
+EPOCHS = 100
 NUM_WORKERS = 2
 PIN_MEMORY = True
-LOAD_MODEL = True
-LOAD_MODEL_FILE = "model.pth.tar"
+LOAD_MODEL = False
+LOAD_MODEL_FILE = "model"
+
 
 def train_fn(train_loader, model, optimizer, loss_fn):
     loop = tqdm(train_loader, leave=True)
@@ -57,17 +60,21 @@ def train_fn(train_loader, model, optimizer, loss_fn):
         loop.set_postfix(loss=loss.item())
 
     print(f"Mean loss was {sum(mean_loss)/len(mean_loss)}")
+    return sum(mean_loss)/len(mean_loss)
+
 
 def main():
     print("Loading model")
-    model = YoloV1(split_size=config["STRIDE"], num_boxes=config["BOX_NUM_PER_CELL"], num_classes=config["CLASS_NUM"]).to(DEVICE)
+    model = YoloV1(split_size=config["STRIDE"], num_boxes=config["BOX_NUM_PER_CELL"],
+                   num_classes=config["CLASS_NUM"]).to(DEVICE)
     optimizer = optim.Adam(
         model.parameters(), lr=LEARNING_RATE, weight_decay=WEIGHT_DECAY
     )
     loss_fn = YoloLoss()
 
     if LOAD_MODEL:
-        load_checkpoint(torch.load(LOAD_MODEL_FILE), model, optimizer)
+        load_checkpoint(torch.load(
+            f"{LOAD_MODEL_FILE}.pth.tar"), model, optimizer)
 
     print("Loading dataset")
     train_dataset = BabyDataset()
@@ -94,37 +101,54 @@ def main():
     #     drop_last=True,
     # )
 
+    losses = []
+    mAPs = []
+
     for epoch in range(EPOCHS):
-        print(f"Epoch: {epoch}")
-        for x, y in train_loader:
-           x = x.to(DEVICE)
-           for idx in range(8):
-               bboxes = cellboxes_to_boxes(model(x))
-               bboxes = non_max_suppression(bboxes[idx], iou_threshold=0.5, threshold=0.4, box_format="midpoint")
-               plot_image(x[idx].permute(1,2,0).to("cpu"), bboxes)
+        print(f"Epoch: {epoch + 1}")
+        # for x, y in train_loader:
+        #     x = x.to(DEVICE)
+        #     for idx in range(8):
+        #         bboxes = cellboxes_to_boxes(model(x))
+        #         bboxes = non_max_suppression(
+        #             bboxes[idx], iou_threshold=0.5, threshold=0.4, box_format="midpoint")
+        #         plot_image(x[idx].permute(1, 2, 0).to("cpu"), bboxes)
 
         #    import sys
         #    sys.exit()
+        loss = train_fn(train_loader, model, optimizer, loss_fn)
+        losses.append(loss)
 
-        pred_boxes, target_boxes = get_bboxes(
-            train_loader, model, iou_threshold=0.5, threshold=0.4, device=DEVICE
-        )
+        if epoch % 1 == 0:
+            pred_boxes, target_boxes = get_bboxes(
+                train_loader, model, iou_threshold=0.75, threshold=0.4, device=DEVICE
+            )
 
-        mean_avg_prec = mean_average_precision(
-            pred_boxes, target_boxes, iou_threshold=0.5, box_format="midpoint"
-        )
-        print(f"Train mAP: {mean_avg_prec}")
-        #    import time
-        #    time.sleep(10)
+            mean_avg_prec_1 = mean_average_precision(
+                pred_boxes, target_boxes, iou_threshold=0.75, box_format="midpoint"
+            )
+            print(f"Train mAP@0.75: {mean_avg_prec_1}")
+            mAPs.append(mean_avg_prec_1.item())
+        else:
+            mAPs.append(' ')
 
-        train_fn(train_loader, model, optimizer, loss_fn)
+        if epoch % 10 == 0:
+            #    import time
+            #    time.sleep(10)
 
-        print("Saving checkpoint")
-        checkpoint = {
-               "state_dict": model.state_dict(),
-               "optimizer": optimizer.state_dict(),
-           }
-        save_checkpoint(checkpoint, filename=LOAD_MODEL_FILE)
+            print("Saving checkpoint")
+            checkpoint = {
+                "state_dict": model.state_dict(),
+                "optimizer": optimizer.state_dict(),
+            }
+            save_checkpoint(
+                checkpoint, filename=f"{LOAD_MODEL_FILE}.{epoch}.pth.tar")
+
+    print(losses, mAPs)
+    with open('loss.csv', 'w') as f:
+        writer = csv.writer(f)
+        for loss, mAP in zip(losses, mAPs):
+            writer.writerow([loss, str(mAP)])
 
 
 if __name__ == "__main__":
