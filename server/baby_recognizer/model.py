@@ -88,3 +88,9 @@ class YoloV1(nn.Module):
             nn.LeakyReLU(0.1),
             nn.Linear(496, S * S * (C + B * 5))
         )
+
+
+if __name__ == "__main__":
+
+    model = YoloV1(split_size=7, num_boxes=2, num_classes=2)
+    print(model)

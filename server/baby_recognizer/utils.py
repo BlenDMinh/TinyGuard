@@ -5,6 +5,7 @@ import matplotlib.patches as patches
 from collections import Counter
 from config import config
 
+
 def intersection_over_union(boxes_preds, boxes_labels, box_format="midpoint"):
     """
     Calculates intersection over union
@@ -150,7 +151,7 @@ def mean_average_precision(
         TP = torch.zeros((len(detections)))
         FP = torch.zeros((len(detections)))
         total_true_bboxes = len(ground_truths)
-        
+
         # If none exists for this class then we can safely skip
         if total_true_bboxes == 0:
             continue
@@ -216,6 +217,7 @@ def plot_image(image, boxes):
 
     # Create a Rectangle potch
     for box in boxes:
+        pred_class = "Crying" if box[0] < 1 else "Not Crying"
         box = box[2:]
         assert len(box) == 4, "Got more values than in x, y, w, h, in a box!"
         upper_left_x = box[0] - box[2] / 2
@@ -229,9 +231,12 @@ def plot_image(image, boxes):
             facecolor="none",
         )
         # Add the patch to the Axes
+        ax.text(upper_left_x * width, upper_left_y *
+                height + 10, pred_class, fontsize=16, bbox=dict(facecolor='red', alpha=0.5))
         ax.add_patch(rect)
 
     plt.show()
+
 
 def get_bboxes(
     loader,
@@ -268,8 +273,7 @@ def get_bboxes(
                 box_format=box_format,
             )
 
-
-            #if batch_idx == 0 and idx == 0:
+            # if batch_idx == 0 and idx == 0:
             #    plot_image(x[idx].permute(1,2,0).to("cpu"), nms_boxes)
             #    print(nms_boxes)
 
@@ -285,7 +289,6 @@ def get_bboxes(
 
     model.train()
     return all_pred_boxes, all_true_boxes
-
 
 
 def convert_cellboxes(predictions, S=config["STRIDE"]):
@@ -337,10 +340,12 @@ def cellboxes_to_boxes(out, S=config["STRIDE"]):
         bboxes = []
 
         for bbox_idx in range(S * S):
-            bboxes.append([x.item() for x in converted_pred[ex_idx, bbox_idx, :]])
+            bboxes.append([x.item()
+                          for x in converted_pred[ex_idx, bbox_idx, :]])
         all_bboxes.append(bboxes)
 
     return all_bboxes
+
 
 def save_checkpoint(state, filename="my_checkpoint.pth.tar"):
     print("=> Saving checkpoint")
