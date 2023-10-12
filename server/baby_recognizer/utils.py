@@ -6,6 +6,24 @@ from collections import Counter
 from config import config
 
 
+def iou_width_height(boxes1, boxes2):
+    """
+    Parameters:
+        boxes1 (tensor): width and height of the first bounding boxes
+        boxes2 (tensor): width and height of the second bounding boxes
+    Returns:
+        tensor: Intersection over union of the corresponding boxes
+    """
+    intersection = torch.min(boxes1[..., 0], boxes2[..., 0]) * torch.min(
+        boxes1[..., 1], boxes2[..., 1]
+    )
+    union = (
+        boxes1[..., 0] * boxes1[..., 1] +
+        boxes2[..., 0] * boxes2[..., 1] - intersection
+    )
+    return intersection / union
+
+
 def intersection_over_union(boxes_preds, boxes_labels, box_format="midpoint"):
     """
     Calculates intersection over union
@@ -33,7 +51,7 @@ def intersection_over_union(boxes_preds, boxes_labels, box_format="midpoint"):
         box1_x1 = boxes_preds[..., 0:1]
         box1_y1 = boxes_preds[..., 1:2]
         box1_x2 = boxes_preds[..., 2:3]
-        box1_y2 = boxes_preds[..., 3:4]  # (N, 1)
+        box1_y2 = boxes_preds[..., 3:4]
         box2_x1 = boxes_labels[..., 0:1]
         box2_y1 = boxes_labels[..., 1:2]
         box2_x2 = boxes_labels[..., 2:3]
@@ -44,9 +62,7 @@ def intersection_over_union(boxes_preds, boxes_labels, box_format="midpoint"):
     x2 = torch.min(box1_x2, box2_x2)
     y2 = torch.min(box1_y2, box2_y2)
 
-    # .clamp(0) is for the case when they do not intersect
     intersection = (x2 - x1).clamp(0) * (y2 - y1).clamp(0)
-
     box1_area = abs((box1_x2 - box1_x1) * (box1_y2 - box1_y1))
     box2_area = abs((box2_x2 - box2_x1) * (box2_y2 - box2_y1))
 
@@ -95,7 +111,7 @@ def non_max_suppression(bboxes, iou_threshold, threshold, box_format="corners"):
 
 
 def mean_average_precision(
-    pred_boxes, true_boxes, iou_threshold=0.5, box_format="midpoint", num_classes=config["CLASS_NUM"]
+    pred_boxes, true_boxes, iou_threshold=0.5, box_format="midpoint", num_classes=config["class_num"]
 ):
     """
     Calculates mean average precision 
@@ -291,7 +307,61 @@ def get_bboxes(
     return all_pred_boxes, all_true_boxes
 
 
-def convert_cellboxes(predictions, S=config["STRIDE"]):
+def get_bboxes_audio(
+    loader,
+    model,
+    iou_threshold,
+    threshold,
+    pred_format="cells",
+    box_format="midpoint",
+    device="cpu",
+):
+    all_pred_boxes = []
+    all_true_boxes = []
+
+    # make sure model is in eval before get bboxes
+    model.eval()
+    train_idx = 0
+
+    for batch_idx, (x_img, x_aud, labels, _) in enumerate(loader):
+        x_img, x_aud = x_img.to(device), x_aud.to(device)
+        labels = labels.to(device)
+
+        with torch.no_grad():
+            predictions = model(x_img, x_aud)
+
+        batch_size = x_img.shape[0]
+        true_bboxes = cellboxes_to_boxes(labels)
+        bboxes = cellboxes_to_boxes(
+            predictions[..., :-config['aud_class_num']])
+
+        for idx in range(batch_size):
+            nms_boxes = non_max_suppression(
+                bboxes[idx],
+                iou_threshold=iou_threshold,
+                threshold=threshold,
+                box_format=box_format,
+            )
+
+            # if batch_idx == 0 and idx == 0:
+            #    plot_image(x[idx].permute(1,2,0).to("cpu"), nms_boxes)
+            #    print(nms_boxes)
+
+            for nms_box in nms_boxes:
+                all_pred_boxes.append([train_idx] + nms_box)
+
+            for box in true_bboxes[idx]:
+                # many will get converted to 0 pred
+                if box[1] > threshold:
+                    all_true_boxes.append([train_idx] + box)
+
+            train_idx += 1
+
+    model.train()
+    return all_pred_boxes, all_true_boxes
+
+
+def convert_cellboxes(predictions, S=config["stride"]):
     """
     Converts bounding boxes output from Yolo with
     an image split size of S into entire image ratios
@@ -302,8 +372,8 @@ def convert_cellboxes(predictions, S=config["STRIDE"]):
     by one, resulting in a slower but more readable implementation.
     """
 
-    C = config["CLASS_NUM"]
-    B = config["BOX_NUM_PER_CELL"]
+    C = config["class_num"]
+    B = config["box_num"]
 
     predictions = predictions.to("cpu")
     batch_size = predictions.shape[0]
@@ -331,7 +401,7 @@ def convert_cellboxes(predictions, S=config["STRIDE"]):
     return converted_preds
 
 
-def cellboxes_to_boxes(out, S=config["STRIDE"]):
+def cellboxes_to_boxes(out, S=config["stride"]):
     converted_pred = convert_cellboxes(out).reshape(out.shape[0], S * S, -1)
     converted_pred[..., 0] = converted_pred[..., 0].long()
     all_bboxes = []

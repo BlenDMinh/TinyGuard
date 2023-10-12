@@ -5,7 +5,7 @@ from config import config
 
 
 class YoloLoss(nn.Module):
-    def __init__(self, S=config["STRIDE"], B=config["BOX_NUM_PER_CELL"], C=config["CLASS_NUM"]):
+    def __init__(self, S=config["stride"], B=config["box_num"], C=config["class_num"]):
         super(YoloLoss, self).__init__()
         self.mse = nn.MSELoss(reduction="sum")
         self.S = S
@@ -117,3 +117,21 @@ class YoloLoss(nn.Module):
         )
 
         return loss
+
+
+class TinyGuardianLoss(YoloLoss):
+    def __init__(self, S=config["stride"], B=config["box_num"], C=config["class_num"], aud_out_extra=config['aud_class_num']):
+        super(TinyGuardianLoss, self).__init__(S, B, C)
+        self.A = aud_out_extra
+
+    def forward(self, predictions, img_target, aud_target):
+        img_pred = predictions[..., :-self.A]
+        aud_pred = predictions[..., -self.A:]
+
+        img_loss = super().forward(img_pred, img_target)
+        aud_class_loss = self.mse(
+            aud_pred,
+            aud_target
+        )
+
+        return (img_loss + aud_class_loss)

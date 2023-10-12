@@ -6,7 +6,7 @@ from matplotlib.patches import Rectangle
 import numpy as np
 import shutil
 
-SRC_PATH = "./src/"
+SRC_PATH = "./src1/"
 
 paths = os.listdir(path=SRC_PATH)
 paths = list(filter(lambda x: pathlib.Path(x).suffix == '.jpg', paths))
