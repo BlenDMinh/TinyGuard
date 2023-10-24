@@ -131,6 +131,24 @@ def main():
             print(f"mAP: {mapval.item()}")
             model.train()
     save_checkpoint(model, optimizer, filename=f"checkpoint.pth.tar")
+    check_class_accuracy(model, train_loader,
+                         threshold=config.CONF_THRESHOLD)
+    check_class_accuracy(model, test_loader,
+                         threshold=config.CONF_THRESHOLD)
+    pred_boxes, true_boxes = get_evaluation_bboxes(
+        test_loader,
+        model,
+        iou_threshold=config.NMS_IOU_THRESH,
+        anchors=config.ANCHORS,
+        threshold=config.CONF_THRESHOLD,
+    )
+    mapval = mean_average_precision(
+        pred_boxes,
+        true_boxes,
+        iou_threshold=config.MAP_IOU_THRESH,
+        box_format="midpoint",
+        num_classes=config.CLASS_NUM,
+    )
 
     with open('losses.txt', 'w') as f:
         f.write(str(losses))
