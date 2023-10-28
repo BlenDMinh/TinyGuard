@@ -1,16 +1,19 @@
-class AuthEntity {
-  final String accessToken;
-  final String refreshToken;
+import 'package:tinyguard/data/datasource/remote/entity/result_entity.dart';
+import 'package:tinyguard/data/datasource/remote/service/base_response_entity.dart';
 
-  AuthEntity({
-    required this.accessToken,
-    required this.refreshToken,
-  });
+class AuthEntity extends BaseResponseApiEntity {
+  ResultEntity? result;
+
+  AuthEntity(super.body);
 
   factory AuthEntity.fromJson(Map<String, dynamic> json) {
-    return AuthEntity(
-      accessToken: json['accessToken'] as String,
-      refreshToken: json['refreshToken'] as String,
-    );
+    return AuthEntity(json);
+  }
+
+  @override
+  void initialValue() {
+    result = body['Result'] != null
+        ? ResultEntity.fromJson(body['Result'] as Map<String, dynamic>)
+        : null;
   }
 }

@@ -27,7 +27,8 @@ class ValidationUtils {
       return false;
     }
 
-    // final passRegexp = RegExp(r'^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{6,}$');
+    final passRegexp = RegExp(
+        r'^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{6,}$');
     return password.length >= Constants.kMinimumPasswordLength;
   }
 }

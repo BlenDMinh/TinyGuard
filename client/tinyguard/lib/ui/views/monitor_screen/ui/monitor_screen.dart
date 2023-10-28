@@ -1,17 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter/src/widgets/framework.dart';
-import 'package:flutter/src/widgets/placeholder.dart';
 import 'package:flutter_mjpeg/flutter_mjpeg.dart';
 import 'package:get/get.dart';
-import 'package:get/get_core/src/get_main.dart';
-import 'package:tinyguard/main.dart';
-import 'package:tinyguard/util/bounding_box.dart';
-
-import '../../../const/app_colors.dart';
-import '../../../service/esp32_cam.dart';
-import '../../../util/app_text_field.dart';
-import '../../../util/container.dart';
+import 'package:tinyguard/main_development.dart';
+import 'package:tinyguard/widget/bounding_box.dart';
+import '../../../../const/app_colors.dart';
+import '../../../../service/esp32_cam.dart';
+import '../../../../widget/container.dart';
 
 class MonitorScreen extends StatefulWidget {
   final String urlLink;

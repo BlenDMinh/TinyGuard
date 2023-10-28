@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:tinyguard/const/app_colors.dart';
 import 'package:flutter/services.dart';
-import '../../main.dart';
+import 'package:tinyguard/main_development.dart';
 
 class Splash1Screen extends StatefulWidget {
   Splash1Screen({super.key});

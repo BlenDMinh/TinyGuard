@@ -1,14 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
-import 'package:tinyguard/page/first_setup_screen/ui/first_setup_screen.dart';
-import 'package:tinyguard/page/main_screen/ui/main_screen.dart';
+import 'package:tinyguard/enums.dart';
+import 'package:tinyguard/flavor_config.dart';
+import 'package:tinyguard/ui/views/first_setup_screen/ui/first_setup_screen.dart';
 
-import 'package:tinyguard/page/monitor_screen/ui/monitor_screen.dart';
-import 'package:tinyguard/page/splash_screen/splash1_screen.dart';
-import 'package:tinyguard/page/splash_screen/splash2_screen.dart';
-import 'package:tinyguard/page/splash_screen/splash3_screen.dart';
-import 'package:tinyguard/util/container.dart';
+import 'package:tinyguard/ui/views/monitor_screen/ui/monitor_screen.dart';
+import 'package:tinyguard/ui/views/splash_screen/splash1_screen.dart';
+import 'package:tinyguard/widget/container.dart';
 
 void main() async {
   await ComponentContainer.ensureInit();
@@ -17,6 +16,7 @@ void main() async {
     SystemUiOverlay.bottom,
     SystemUiOverlay.top,
   ]);
+  FlavorConfig(baseApiUrl: "", flavor: Flavor.production, versionAPI: 'v1');
   runApp(const MainApp());
 }
 

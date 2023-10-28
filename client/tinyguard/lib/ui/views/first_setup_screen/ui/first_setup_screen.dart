@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
-import 'package:get/get_core/src/get_main.dart';
-import 'package:tinyguard/util/app_text_field.dart';
+import 'package:tinyguard/widget/app_text_field.dart';
 
-import '../../../const/app_colors.dart';
-import '../../../main.dart';
+import '../../../../const/app_colors.dart';
+import '../../../../main_development.dart';
 
 class FirstSetupScreen extends StatefulWidget {
   const FirstSetupScreen({super.key});

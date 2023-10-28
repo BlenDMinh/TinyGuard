@@ -1,7 +1,9 @@
 import 'dart:io';
 import 'package:dio/dio.dart';
+import 'package:tinyguard/data/datasource/remote/api/api_constants.dart';
 import 'package:tinyguard/data/datasource/remote/api/api_exception.dart';
 import 'package:tinyguard/data/datasource/remote/entity/auth_entity.dart';
+import 'package:tinyguard/data/shared/constants.dart';
 import 'package:tinyguard/data/shared_preferences/spref_auth_model.dart';
 import 'package:tinyguard/flavor_config.dart';
 import 'package:tinyguard/utils/log_utils.dart';
@@ -165,15 +167,19 @@ extension APIClientRefreshToken on APIClient {
     LogUtils.methodIn(message: 'refreshToken');
     try {
       final response = await post(
-        url: '/refresh_token',
+        url: '${FlavorConfig.instance.baseURL}${ApiConstants.refreshToken}',
         data: {
-          'refresh_token': sPref.refreshToken!,
-          'access_token': sPref.accessToken!,
+          'RefreshToken': sPref.refreshToken!,
+          'AccessToken': sPref.accessToken!,
         },
       );
       final authEntity = AuthEntity.fromJson(response as Map<String, dynamic>);
-      await sPref.setRefreshToken(value: authEntity.refreshToken);
-      await sPref.setAccessToken(value: authEntity.accessToken);
+      await sPref.setRefreshToken(
+        value: authEntity.result?.item?.refreshToken ?? Constants.kEmptyString,
+      );
+      await sPref.setAccessToken(
+        value: authEntity.result?.item?.accessToken ?? Constants.kEmptyString,
+      );
     } catch (e) {
       LogUtils.e(e.toString());
       throw UnauthorizedException();

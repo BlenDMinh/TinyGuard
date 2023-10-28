@@ -3,9 +3,9 @@ import 'package:flutter/material.dart';
 enum ConnectionStatus { disconnect, connecting, connected }
 
 abstract class Esp32Camera {
-  String? get streamingUrl; // url
-  String? get bluetoothAddress; // bluetooth address
-  set bluetoothAddress(String? address); // set bluetooth address
+  String? get streamingUrl;
+  String? get bluetoothAddress;
+  set bluetoothAddress(String? address);
   bool get isActive;
 
   ConnectionStatus get bluetoothStatus;
@@ -169,73 +169,55 @@ class ImplementedEsp32Camera implements Esp32Camera {
 
   @override
   Future<bool> activateCamera() {
-    // TODO: implement activateCamera
     throw UnimplementedError();
   }
 
   @override
-  // TODO: implement bluetoothStatus
   ConnectionStatus get bluetoothStatus => throw UnimplementedError();
 
   @override
   Future<bool> connectBluetooth() {
-    // TODO: implement connectBluetooth
     throw UnimplementedError();
   }
 
   @override
   Future<bool> connectWifi(String ssid, String password) {
-    // TODO: implement connectWifi
     throw UnimplementedError();
   }
 
   @override
   Future<bool> deactivateCamera() {
-    // TODO: implement deactivateCamera
     throw UnimplementedError();
   }
 
   @override
   bool disconnectBluetooth() {
-    // TODO: implement disconnectBluetooth
     throw UnimplementedError();
   }
 
   @override
-  // TODO: implement isActive
   bool get isActive => throw UnimplementedError();
 
   @override
-  void onBluetoothConnect(Function(String address) callback) {
-    // TODO: implement onBluetoothConnect
-  }
+  void onBluetoothConnect(Function(String address) callback) {}
 
   @override
-  void onCameraActivate(Function() callback) {
-    // TODO: implement onCameraActivate
-  }
+  void onCameraActivate(Function() callback) {}
 
   @override
-  void onCameraDeactivate(Function() callback) {
-    // TODO: implement onCameraDeactivate
-  }
+  void onCameraDeactivate(Function() callback) {}
 
   @override
-  void onWifiConnect(Function(String ssid) callback) {
-    // TODO: implement onWifiConnect
-  }
+  void onWifiConnect(Function(String ssid) callback) {}
 
   @override
   Future<String> requestStreamingUrl() {
-    // TODO: implement requestStreamingUrl
     throw UnimplementedError();
   }
 
   @override
-  // TODO: implement streamingUrl
   String? get streamingUrl => throw UnimplementedError();
 
   @override
-  // TODO: implement wifiStatus
   ConnectionStatus get wifiStatus => throw UnimplementedError();
 }
