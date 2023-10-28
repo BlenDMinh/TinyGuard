@@ -12,6 +12,9 @@ app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///database.db"
 db = SQLAlchemy(model_class=Base)
 db.init_app(app)
 
+with app.app_context():
+    db.create_all()
+
 if __name__ == "__main__":
     from config import config
     from route import route
