@@ -3,6 +3,10 @@ import 'package:flutter/services.dart';
 import 'package:flutter/src/widgets/framework.dart';
 import 'package:flutter/src/widgets/placeholder.dart';
 import 'package:flutter_mjpeg/flutter_mjpeg.dart';
+import 'package:get/get.dart';
+import 'package:get/get_core/src/get_main.dart';
+import 'package:tinyguard/main.dart';
+import 'package:tinyguard/util/bounding_box.dart';
 
 import '../../../const/app_colors.dart';
 import '../../../service/esp32_cam.dart';
@@ -41,53 +45,50 @@ class _MonitorScreenState extends State<MonitorScreen> {
     @override
     final videoService =
         ComponentContainer().get(Component.esp32Camera) as Esp32Camera;
-    videoService.bluetoothAddress = "55:65:AE:C8:CD:7C";
-    return FutureBuilder(
-      future: videoService
-          .connectBluetooth()
-          .then((value) => videoService.connectWifi("A", "B").then((value) =>
-              videoService
-                  .activateCamera()
-                  .then((value) => videoService.requestStreamingUrl())))
-          .onError((error, stackTrace) {
-        debugPrint(error.toString());
-        return "";
-      }),
-      builder: (context, snapshot) {
-        if (snapshot.data == null) {
-          return const CircularProgressIndicator();
-        }
-        if (snapshot.data!.isEmpty) {
-          return const Center(
-            child: Text("Camera not found"),
-          );
-        }
-        final url = snapshot.data!;
-        debugPrint("Camera streaming at: $url");
-        return GestureDetector(
-            onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
-            child: WillPopScope(
-                onWillPop: () => Future.value(true),
-                child: Scaffold(
-                    backgroundColor: AppColors.blackBackground,
-                    body: Container(
-                      child: Mjpeg(
-                        height: MediaQuery.of(context).size.height,
-                        width: MediaQuery.of(context).size.width,
-                        stream: widget.urlLink,
-                        isLive: true,
-                      ),
-                    ))));
-      },
+    //videoService.bluetoothAddress = "55:65:AE:C8:CD:7C";
+    return GestureDetector(
+      onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
+      child: WillPopScope(
+        onWillPop: () => Future.value(true),
+        child: Scaffold(
+          backgroundColor: AppColors.blackBackground,
+          body: Stack(
+            children: [
+              Container(
+                alignment: Alignment.center,
+                child: Mjpeg(
+                  width: MediaQuery.of(context).size.width,
+                  fit: BoxFit.fitWidth,
+                  stream:
+                      'https://blog.pregistry.com/wp-content/uploads/2018/04/AdobeStock_42898239.jpeg',
+                  isLive: true,
+                ),
+              ),
+              BoundingBox(
+                x: 260,
+                y: 0,
+                height: 250,
+                width: 270,
+                isCrying: true,
+              ),
+              Positioned(
+                bottom: 20.0,
+                right: 20.0,
+                child: FloatingActionButton(
+                  backgroundColor: Colors.deepPurpleAccent,
+                  onPressed: () {
+                    Get.offAllNamed(Routes.firstSetup);
+                  },
+                  child: Icon(
+                    Icons.add,
+                    size: 35,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
-
-  //@override
-  //void dispose() {
-  //  // Restore the system preferred orientations
-  //  SystemChrome.setPreferredOrientations([
-  //    DeviceOrientation.portraitUp,
-  //  ]);
-  //  super.dispose();
-  //}
 }

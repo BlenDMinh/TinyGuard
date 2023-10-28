@@ -24,6 +24,7 @@ class _Splash1ScreenState extends State<Splash1Screen> {
     SystemChrome.setPreferredOrientations([
       DeviceOrientation.portraitUp,
     ]);
+
     super.initState();
   }
 
@@ -37,11 +38,6 @@ class _Splash1ScreenState extends State<Splash1Screen> {
 
   @override
   Widget build(BuildContext context) {
-    SystemChrome.setEnabledSystemUIMode(SystemUiMode.leanBack, overlays: [
-      SystemUiOverlay.bottom,
-      SystemUiOverlay.top,
-    ]);
-
     //SystemChrome.setPreferredOrientations([
     //  DeviceOrientation.portraitUp,
     //]);

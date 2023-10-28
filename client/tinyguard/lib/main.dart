@@ -12,7 +12,11 @@ import 'package:tinyguard/util/container.dart';
 
 void main() async {
   await ComponentContainer.ensureInit();
-
+  WidgetsFlutterBinding.ensureInitialized();
+  SystemChrome.setEnabledSystemUIMode(SystemUiMode.leanBack, overlays: [
+    SystemUiOverlay.bottom,
+    SystemUiOverlay.top,
+  ]);
   runApp(const MainApp());
 }
 
