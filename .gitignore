@@ -1,3 +1,4 @@
 /server/.venv
 /server/baby_recognizer/.venv
 /server/baby_recognizer/dataset
+**/__pycache__/

@@ -1,3 +1,4 @@
+from view.user_api import testuser
 from view.index import index, test_api
 from view.device_api import image_input
 
@@ -14,7 +15,7 @@ route = {
     },
     "/api/user/register": {
         "endpoint": "api user register",
-        "view": None,
+        "view": testuser,
         "methods": ["POST"]
     },
     # body: {
