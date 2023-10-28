@@ -1,15 +1,17 @@
-import time
+import datetime
 from flask_sqlalchemy import SQLAlchemy
 
 from entity.auth_entity import LoginDetail, LoginSession
 import random
 
 from model.auth_model import LoginInfo, RegisterInfo
+from service.user_service import UserService
 
 
 class AuthenticationService:
-    def __init__(self, db: SQLAlchemy):
+    def __init__(self, db: SQLAlchemy, user_service: UserService):
         self.db = db
+        self.user_service = user_service
 
     def login(self, login_info: LoginInfo):
         if login_info.type == 0:
@@ -27,9 +29,9 @@ class AuthenticationService:
             if session != None:
                 return session
 
-            random.seed(time.now())
-            refresh_token = random.getrandbits(128)
-            access_token = random.getrandbits(128)
+            random.seed(datetime.datetime.now().microsecond)
+            refresh_token = random.getrandbits(16)
+            access_token = random.getrandbits(16)
 
             session = LoginSession(
                 id=detail.id, refresh_token=refresh_token, access_token=access_token)
@@ -44,4 +46,12 @@ class AuthenticationService:
             return session
 
     def register(self, register_info: RegisterInfo):
-        pass
+        user = self.user_service.create(
+            register_info.username, register_info.age, register_info.email, register_info.phone_number)
+        login_detail = LoginDetail(
+            id=user.id,
+            password_hash=register_info.password
+        )
+        self.db.session.add(login_detail)
+        self.db.session.commit()
+        return user

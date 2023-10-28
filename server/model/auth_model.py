@@ -31,4 +31,4 @@ class LoginInfo:
 
     @classmethod
     def from_json(cls, json: dict[str, any]):
-        return cls(json['type'], json['email'], json['password'], json['password'], json['access_token'])
+        return cls(json['type'], json['email'], json['password'], json['access_token'])

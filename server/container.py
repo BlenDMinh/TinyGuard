@@ -19,10 +19,11 @@ Component = Enum('Component', [
     "AuthenticationService"
 ])
 
+_userService = UserService(db=db)
 
 container = {
     Component.BabyService: BabyService(),
-    Component.UserService: UserService(db=db),
+    Component.UserService: _userService,
     Component.TestRepository: TestRepository(),
-    Component.AuthenticationService: AuthenticationService(db)
+    Component.AuthenticationService: AuthenticationService(db, _userService)
 }

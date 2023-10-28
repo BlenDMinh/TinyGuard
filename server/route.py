@@ -1,6 +1,7 @@
 from view.user_api import testuser
 from view.index import index, test_api
 from view.device_api import image_input
+from view.auth_api import login, register
 
 route = {
     "/": {
@@ -15,7 +16,7 @@ route = {
     },
     "/api/user/register": {
         "endpoint": "api user register",
-        "view": testuser,
+        "view": register,
         "methods": ["POST"]
     },
     # body: {
@@ -35,7 +36,7 @@ route = {
 
     "/api/user/login": {
         "endpoint": "api user login",
-        "view": None,
+        "view": login,
         "methods": ["POST"]
     },
     # body: {
