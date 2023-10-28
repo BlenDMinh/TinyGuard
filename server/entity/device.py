@@ -1,6 +1,10 @@
+from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import Integer, String
 from sqlalchemy.orm import Mapped, mapped_column
-from main import db
+
+import config
+
+db = config.db
 
 
 class Device(db.Model):

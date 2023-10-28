@@ -1,6 +1,8 @@
+from http import HTTPStatus
 from flask import Response
 from container import container, Component
 from repository.test_repository import TestRepository
+from service.auth_service import AuthenticationService
 from service.baby_service import BabyService
 
 import json
@@ -13,7 +15,6 @@ def index():
 
 
 def test_api():
-    data = {
-        'message': 'hello'
-    }
-    return Response(response=json.dumps(data), mimetype='application/json')
+    auth: AuthenticationService = container[Component.AuthenticationService]
+    auth.login("themysmine@gmail.com", "p")
+    return Response(status=HTTPStatus.ACCEPTED, response="OK")

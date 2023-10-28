@@ -1,6 +1,10 @@
+from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import Integer, String
 from sqlalchemy.orm import Mapped, mapped_column
-from main import db
+
+import config
+
+db = config.db
 
 
 class User(db.Model):
@@ -9,4 +13,3 @@ class User(db.Model):
     username: Mapped[str] = mapped_column(String, unique=True, nullable=False)
     age: Mapped[int] = mapped_column(Integer)
     email: Mapped[str] = mapped_column(String, unique=True, nullable=False)
-    password: Mapped[str] = mapped_column(String, nullable=False)

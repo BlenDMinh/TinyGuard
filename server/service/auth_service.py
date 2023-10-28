@@ -1,3 +1,5 @@
+from http import HTTPStatus
+from flask import Response
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import Select
 
@@ -10,4 +12,9 @@ class AuthenticationService:
         self.db = db
 
     def login(self, email: str, password: str):
-        detail = LoginDetail.query.filter_by(User.user.has(email))
+        detail: LoginDetail = LoginDetail.query.filter(
+            LoginDetail.user.has(email=email)).filter_by(
+                password_hash=password
+        ).first()
+        if detail == None:
+            return None
