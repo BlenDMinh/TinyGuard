@@ -94,61 +94,78 @@ def main():
         * torch.tensor(config.STRIDE).unsqueeze(1).unsqueeze(1).repeat(1, 3, 2)
     ).to(config.DEVICE)
 
-    losses = []
+    import csv
+    rec = [0, 0, 0, 0, 0, 0, 0, 0]
+    with open('train_v4.csv', 'w') as f:
+        writer = csv.writer(f)
 
-    for epoch in range(config.NUM_EPOCHS):
-        # plot_couple_examples(model, test_loader, 0.6, 0.5, scaled_anchors)
-        loss = train_fn(train_loader, model, optimizer,
-                        loss_fn, scaler, scaled_anchors)
-        losses.append(loss)
+        losses = []
 
-        if config.SAVE_MODEL and epoch % 10 == 0:
-            save_checkpoint(model, optimizer, filename=f"checkpoint.pth.tar")
+        for epoch in range(config.NUM_EPOCHS):
+            # plot_couple_examples(model, test_loader, 0.6, 0.5, scaled_anchors)
+            loss = train_fn(train_loader, model, optimizer,
+                            loss_fn, scaler, scaled_anchors)
+            rec[0] = loss
+            losses.append(loss)
 
-        print(f"Currently epoch {epoch}")
-        # print("On Train Eval loader:")
-        # print("On Train loader:")
+            if config.SAVE_MODEL and epoch % 10 == 0:
+                save_checkpoint(model, optimizer,
+                                filename=f"checkpoint.pth.tar")
 
-        if epoch > 0 and epoch % 30 == 0:
-            check_class_accuracy(model, train_loader,
-                                 threshold=config.CONF_THRESHOLD)
-            check_class_accuracy(model, test_loader,
-                                 threshold=config.CONF_THRESHOLD)
-            pred_boxes, true_boxes = get_evaluation_bboxes(
-                test_loader,
-                model,
-                iou_threshold=config.NMS_IOU_THRESH,
-                anchors=config.ANCHORS,
-                threshold=config.CONF_THRESHOLD,
-            )
-            mapval = mean_average_precision(
-                pred_boxes,
-                true_boxes,
-                iou_threshold=config.MAP_IOU_THRESH,
-                box_format="midpoint",
-                num_classes=config.CLASS_NUM,
-            )
-            print(f"mAP: {mapval.item()}")
-            model.train()
-    save_checkpoint(model, optimizer, filename=f"checkpoint.pth.tar")
-    check_class_accuracy(model, train_loader,
-                         threshold=config.CONF_THRESHOLD)
-    check_class_accuracy(model, test_loader,
-                         threshold=config.CONF_THRESHOLD)
-    pred_boxes, true_boxes = get_evaluation_bboxes(
-        test_loader,
-        model,
-        iou_threshold=config.NMS_IOU_THRESH,
-        anchors=config.ANCHORS,
-        threshold=config.CONF_THRESHOLD,
-    )
-    mapval = mean_average_precision(
-        pred_boxes,
-        true_boxes,
-        iou_threshold=config.MAP_IOU_THRESH,
-        box_format="midpoint",
-        num_classes=config.CLASS_NUM,
-    )
+            print(f"Currently epoch {epoch}")
+            # print("On Train Eval loader:")
+            # print("On Train loader:")
+
+            if epoch > 0 and epoch % 10 == 0:
+                train_acc = check_class_accuracy(model, train_loader,
+                                                 threshold=config.CONF_THRESHOLD)
+                test_acc = check_class_accuracy(model, test_loader,
+                                                threshold=config.CONF_THRESHOLD)
+                pred_boxes, true_boxes = get_evaluation_bboxes(
+                    test_loader,
+                    model,
+                    iou_threshold=config.NMS_IOU_THRESH,
+                    anchors=config.ANCHORS,
+                    threshold=config.CONF_THRESHOLD,
+                )
+                mapval = mean_average_precision(
+                    pred_boxes,
+                    true_boxes,
+                    iou_threshold=config.MAP_IOU_THRESH,
+                    box_format="midpoint",
+                    num_classes=config.CLASS_NUM,
+                )
+                print(f"mAP: {mapval.item()}")
+                rec[1:4] = train_acc
+                rec[4:7] = test_acc
+                rec[7] = mapval
+                model.train()
+
+            writer.writerow(rec)
+        save_checkpoint(model, optimizer, filename=f"checkpoint.pth.tar")
+        train_acc = check_class_accuracy(model, train_loader,
+                                         threshold=config.CONF_THRESHOLD)
+        test_acc = check_class_accuracy(model, test_loader,
+                                        threshold=config.CONF_THRESHOLD)
+        pred_boxes, true_boxes = get_evaluation_bboxes(
+            test_loader,
+            model,
+            iou_threshold=config.NMS_IOU_THRESH,
+            anchors=config.ANCHORS,
+            threshold=config.CONF_THRESHOLD,
+        )
+        mapval = mean_average_precision(
+            pred_boxes,
+            true_boxes,
+            iou_threshold=config.MAP_IOU_THRESH,
+            box_format="midpoint",
+            num_classes=config.CLASS_NUM,
+        )
+        rec[1:4] = train_acc
+        rec[4:7] = test_acc
+        rec[7] = mapval
+
+        writer.writerow(rec)
 
     with open('losses.txt', 'w') as f:
         f.write(str(losses))
