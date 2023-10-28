@@ -6,6 +6,7 @@ class BoundingBox extends StatelessWidget {
   final double height;
   final double width;
   final bool isCrying;
+  final double confidence;
 
   const BoundingBox({
     super.key,
@@ -14,6 +15,7 @@ class BoundingBox extends StatelessWidget {
     required this.height,
     required this.width,
     required this.isCrying,
+    required this.confidence,
   });
 
   @override

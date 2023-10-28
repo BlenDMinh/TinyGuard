@@ -1,4 +1,4 @@
-import 'package:tinyguard/entity/common_info_entity.dart';
+import 'package:tinyguard/data/datasource/remote/entity/common_info_entity.dart';
 
 abstract class BaseResponseApiEntity {
   dynamic _body;

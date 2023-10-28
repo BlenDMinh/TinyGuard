@@ -1,5 +1,5 @@
+import 'package:tinyguard/data/datasource/remote/entity/base_response_entity.dart';
 import 'package:tinyguard/data/datasource/remote/entity/result_entity.dart';
-import 'package:tinyguard/data/datasource/remote/service/base_response_entity.dart';
 
 class AuthEntity extends BaseResponseApiEntity {
   ResultEntity? result;

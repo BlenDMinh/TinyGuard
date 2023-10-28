@@ -1,25 +1,33 @@
-import 'package:tinyguard/data/datasource/remote/service/item_entity.dart';
+import 'package:tinyguard/data/datasource/remote/api/api_client.dart';
+import 'package:tinyguard/data/datasource/remote/dto/user_credentials.dart';
+import 'package:tinyguard/data/datasource/remote/dto/user_register_credentials.dart';
+import 'package:tinyguard/data/datasource/remote/entity/auth_entity.dart';
+import 'package:tinyguard/data/datasource/remote/entity/user_entity.dart';
 
-class ResultEntity {
-  ItemEntity? item;
+enum AuthRoute {
+  login('/login');
 
-  ResultEntity({this.item});
+  const AuthRoute(this.path);
+  final String path;
+}
 
-  factory ResultEntity.fromJson(Map<String, dynamic> json) {
-    return ResultEntity(
-      item: json['Item'] != null
-          ? ItemEntity.fromJson(
-              json['Item'] as Map<String, dynamic>,
-            )
-          : null,
-    );
+class AuthAPIService {
+  final APIClient client;
+
+  AuthAPIService({required this.client});
+
+  Future<AuthEntity> login(UserCredentials credentials) async {
+    String path = AuthRoute.login.path;
+    final response = await client.post(url: path, data: credentials.toJson());
+    return AuthEntity.fromJson(response as Map<String, dynamic>);
   }
 
-  Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = <String, dynamic>{};
-    if (item != null) {
-      data['Item'] = item!.toJson();
-    }
-    return data;
+  Future<UserEntity> register(
+      UserRegisterCredentials userRegisterCredentials) async {
+    final response = await client.post(
+      url: '',
+      data: userRegisterCredentials.toJson(),
+    );
+    return response;
   }
 }

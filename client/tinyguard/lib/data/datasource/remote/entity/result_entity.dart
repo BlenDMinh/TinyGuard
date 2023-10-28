@@ -1,4 +1,4 @@
-import 'package:tinyguard/data/datasource/remote/service/item_entity.dart';
+import 'package:tinyguard/data/datasource/remote/entity/item_entity.dart';
 
 class ResultEntity {
   ItemEntity? item;

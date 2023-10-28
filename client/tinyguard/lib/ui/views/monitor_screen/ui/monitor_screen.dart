@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_mjpeg/flutter_mjpeg.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:tinyguard/main_development.dart';
+import 'package:tinyguard/ui/views/base/base_view.dart';
 import 'package:tinyguard/widget/bounding_box.dart';
 import '../../../../const/app_colors.dart';
 import '../../../../service/esp32_cam.dart';
@@ -41,13 +43,11 @@ class _MonitorScreenState extends State<MonitorScreen> {
     final videoService =
         ComponentContainer().get(Component.esp32Camera) as Esp32Camera;
     //videoService.bluetoothAddress = "55:65:AE:C8:CD:7C";
-    return GestureDetector(
-      onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
-      child: WillPopScope(
-        onWillPop: () => Future.value(true),
-        child: Scaffold(
-          backgroundColor: AppColors.blackBackground,
-          body: Stack(
+    return BaseView(
+      mobileBuilder: (context) {
+        return GestureDetector(
+          onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
+          child: Stack(
             children: [
               Container(
                 alignment: Alignment.center,
@@ -65,6 +65,7 @@ class _MonitorScreenState extends State<MonitorScreen> {
                 height: 250,
                 width: 270,
                 isCrying: true,
+                confidence: 100,
               ),
               Positioned(
                 bottom: 20.0,
@@ -76,14 +77,14 @@ class _MonitorScreenState extends State<MonitorScreen> {
                   },
                   child: Icon(
                     Icons.add,
-                    size: 35,
+                    size: 35.sp,
                   ),
                 ),
               ),
             ],
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 }

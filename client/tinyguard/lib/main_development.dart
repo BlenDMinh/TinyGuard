@@ -4,7 +4,6 @@ import 'package:get/get.dart';
 import 'package:tinyguard/enums.dart';
 import 'package:tinyguard/flavor_config.dart';
 import 'package:tinyguard/ui/views/first_setup_screen/ui/first_setup_screen.dart';
-
 import 'package:tinyguard/ui/views/monitor_screen/ui/monitor_screen.dart';
 import 'package:tinyguard/ui/views/splash_screen/splash1_screen.dart';
 import 'package:tinyguard/widget/container.dart';
@@ -24,7 +23,6 @@ class Routes {
   static const String splash1 = '/splash1';
   static const String splash2 = '/splash2';
   static const String splash3 = '/splash3';
-
   static const String firstSetup = '/firstsetup';
   static const String dashboard = '/dashboard';
   static const String monitor = '/monitor';
@@ -38,7 +36,7 @@ class Routes {
     monitor: (context) {
       String urlLink = ModalRoute.of(context)?.settings.arguments as String;
       return MonitorScreen(urlLink: urlLink);
-    }
+    },
   };
 }
 
