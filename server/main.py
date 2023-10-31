@@ -9,6 +9,7 @@ import config
 
 app = config.app
 db = config.db
+socketio = config.socketio
 
 with app.app_context():
     db.create_all()
@@ -20,8 +21,13 @@ if __name__ == "__main__":
         app.add_url_rule(
             url, endpoint=handler["endpoint"], view_func=handler["view"], methods=handler["methods"])
 
-    app.run(
-        debug=config["debug"],
-        port=config["port"],
-        host=config["host"]
-    )
+    # app.run(
+    #     debug=config["debug"],
+    #     port=config["port"],
+    #     host=config["host"]
+    # )
+
+    socketio.run(app,
+                 debug=config["debug"],
+                 port=config["port"],
+                 host=config["host"])

@@ -14,9 +14,13 @@ class BoundingBox:
 class ImagePredict:
     def __init__(self, bboxes: list[BoundingBox]) -> None:
         self.bboxes = bboxes
+        is_crying = False
+        for bbox in bboxes:
+            is_crying = is_crying or bbox.label == 0
+        self.is_crying = is_crying
 
     def to_json(self):
-        return dict(bboxes=list(map(lambda e: e.to_json(), self.bboxes)))
+        return dict(bboxes=list(map(lambda e: e.to_json(), self.bboxes)), is_crying=self.is_crying)
 
 
 class AudioPredict:
