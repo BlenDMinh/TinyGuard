@@ -57,12 +57,14 @@ class _Splash1ScreenState extends State<Splash1Screen> {
                         margin:
                             EdgeInsets.symmetric(horizontal: 25, vertical: 25),
                         decoration: BoxDecoration(
-                            color: Colors.transparent,
-                            borderRadius: BorderRadius.circular(41),
-                            image: DecorationImage(
-                                image: AssetImage(
+                          color: Colors.transparent,
+                          borderRadius: BorderRadius.circular(41),
+                          image: DecorationImage(
+                            image: AssetImage(
                               babyCard[index],
-                            ))),
+                            ),
+                          ),
+                        ),
                       );
                     },
                     pagination: SwiperPagination(
@@ -91,18 +93,23 @@ class _Splash1ScreenState extends State<Splash1Screen> {
               Expanded(
                 flex: 6,
                 child: Container(
-                  padding: EdgeInsets.only(right: 30, left: 30, bottom: 80),
+                  padding: EdgeInsets.only(
+                    right: 30,
+                    left: 30,
+                    bottom: 80,
+                  ),
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.spaceAround,
                     children: [
                       Text(
                         "Track everything!",
                         style: TextStyle(
-                            letterSpacing: 3,
-                            fontSize: 30,
-                            color: Colors.grey[800],
-                            fontFamily: "Roboto",
-                            fontWeight: FontWeight.w900),
+                          letterSpacing: 3,
+                          fontSize: 30,
+                          color: Colors.grey[800],
+                          fontFamily: "Roboto",
+                          fontWeight: FontWeight.w900,
+                        ),
                       ),
                       Text(
                         "Hundreds of activities for Physical, Cognitive, Speech and Social-Emotional Development",

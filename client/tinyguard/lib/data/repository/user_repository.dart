@@ -1,5 +1,5 @@
 import 'package:tinyguard/data/datasource/remote/dto/user_credentials.dart';
-import 'package:tinyguard/data/datasource/remote/entity/auth_api_service.dart';
+import 'package:tinyguard/data/datasource/remote/service/auth_api_service.dart';
 import 'package:tinyguard/data/datasource/remote/entity/auth_entity.dart';
 
 abstract class UserRepository {
