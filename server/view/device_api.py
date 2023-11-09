@@ -8,7 +8,7 @@ from service.device_service import DeviceService
 
 
 def image_input():
-    image = request.files['imageFile']
+    image = request.files.get['imageFile']
     if not image:
         return Response(status=HTTPStatus.NOT_FOUND)
     device_service: DeviceService = container.get(Component.DeviceService)
