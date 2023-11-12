@@ -1,7 +1,7 @@
 from repository.test_repository import TestRepository
 from service.device_service import DeviceService
 from service.user_service import UserService
-from service.auth_service import AuthenticationService
+from service.auth_service import AuthService
 from service.baby_service import BabyService
 from enum import Enum
 
@@ -27,7 +27,7 @@ container = {
     Component.BabyService: BabyService(),
     Component.UserService: _userService,
     Component.TestRepository: TestRepository(),
-    Component.AuthenticationService: AuthenticationService(db, _userService)
+    Component.AuthenticationService: AuthService()
 }
 
 

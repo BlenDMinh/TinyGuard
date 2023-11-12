@@ -1,5 +1,5 @@
 from view.user_api import testuser
-from view.index import index, test_api
+from view.index import index
 from view.device_api import image_input
 from view.auth_api import login, register
 
@@ -9,47 +9,16 @@ route = {
         "view": index,
         "methods": ["GET"]
     },
-    "/api/test": {
-        "endpoint": "api - test",
-        "view": test_api,
-        "methods": ["GET"]
-    },
     "/api/user/register": {
         "endpoint": "api user register",
         "view": register,
         "methods": ["POST"]
     },
-    # body: {
-    #   username
-    #   age
-    #   phone_number
-    #   email
-    #   password
-    # }
-    # return
-    # if OK:
-    #   normal http response
-    # else:
-    #   body: {
-    #       errorMessage
-    #   }
-
     "/api/user/login": {
         "endpoint": "api user login",
         "view": login,
         "methods": ["POST"]
     },
-    # body: {
-    #     phone_number
-    #     password
-    # }
-    # if OK:
-    #   normal http response
-    # else:
-    #   body: {
-    #       errorMessage
-    #   }
-
     "/api/user/device": {
         "endpoint": "api user add device",
         "view": None,

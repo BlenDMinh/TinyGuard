@@ -5,3 +5,5 @@ Pillow
 albumentations
 opencv-python
 numpy
+bcrypt
+pyjwt

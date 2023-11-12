@@ -6,7 +6,10 @@ from sqlalchemy.orm import DeclarativeBase
 config = {
     "debug": True,
     "port": 5000,
-    "host": "0.0.0.0"
+    "host": "0.0.0.0",
+    "SECRET_KEY": "GUARD",
+    "ACCESS_EXPIRE": 3600,
+    "REFRESH_EXPIRE": 2592000
 }
 
 

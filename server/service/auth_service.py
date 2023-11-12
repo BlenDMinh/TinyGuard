@@ -1,57 +1,145 @@
-import datetime
-from flask_sqlalchemy import SQLAlchemy
+from datetime import datetime
+import config
+db = config.db
+from entity.login_data import LoginData
+from entity.session import Session
+from entity.user import User
+from service.models import LoginRequestDto, RegisterRequestDto, WrapResponseDto
+from util.security import check_password, generate_hash, get_hash_password
 
-from entity.auth_entity import LoginDetail, LoginSession
-import random
+class AuthService:
+    def login(login_request: LoginRequestDto) -> WrapResponseDto:
+        if login_request.type == -1:
+            return WrapResponseDto.error("Bad request", "Request arguments is not correct")
+        if login_request.type == 0:
+            email = login_request.email
+            password = login_request.password
 
-from model.auth_model import LoginInfo, RegisterInfo
-from service.user_service import UserService
+            login_data: LoginData = LoginData.query.filter(
+                LoginData.user.has(email=email)).first()
+            if not login_data:
+                return WrapResponseDto.error("Bad request", "Email not found")
 
+            password_hash = login_data.password_hash
+            if not check_password(password, password_hash):
+                return WrapResponseDto.error("Bad request", "Password is wrong")
 
-class AuthenticationService:
-    def __init__(self, db: SQLAlchemy, user_service: UserService):
-        self.db = db
-        self.user_service = user_service
+            access_token = generate_hash({
+                "user_id": login_data.user.id,
+                "time": datetime.now().timestamp()
+            })
 
-    def login(self, login_info: LoginInfo):
-        if login_info.type == 0:
-            email = login_info.email
-            password = login_info.password
-            detail: LoginDetail = LoginDetail.query.filter(
-                LoginDetail.user.has(email=email)).filter_by(
-                    password_hash=password
-            ).first()
-            if detail == None:
-                return None
+            refresh_token = generate_hash({
+                "user_id": login_data.user.id,
+                "time": datetime.now().timestamp()
+            })
 
-            session: LoginSession = LoginSession.query.filter(
-                LoginSession.id == detail.id).first()
-            if session != None:
-                return session
+            session: Session = Session(
+                id=None,
+                user=login_data.user,
+                access_token=access_token,
+                refresh_token=refresh_token,
+                a_create_time=datetime.now(),
+                r_create_time=datetime.now(),
+                a_expire=config.config["ACCESS_EXPIRE"],
+                r_expire=config.config["REFRESH_EXPIRE"]
+            )
 
-            random.seed(datetime.datetime.now().microsecond)
-            refresh_token = random.getrandbits(16)
-            access_token = random.getrandbits(16)
+            db.session.add(session)
+            db.session.commit()
 
-            session = LoginSession(
-                id=detail.id, refresh_token=refresh_token, access_token=access_token)
+            return WrapResponseDto.success({
+                "access_token": access_token,
+                "refresh_token": refresh_token,
+                "user": login_data.user.to_json()
+            }, "Successfully login")
 
-            self.db.session.add(session)
-            self.db.session.commit()
+        token = login_request.access_token
+        session: Session = Session.query.filter_by(access_token=token).first()
+        if not session or session.is_refresh_expired:
+            db.session.delete(session)
+            db.session.commit()
+            return WrapResponseDto.error("Bad request", "Session has expired")
 
-            return session
-        elif login_info.type == 1:
-            session = LoginSession.query.filter_by(
-                access_token=login_info.access_token).first_or_404()
-            return session
+        if session.is_access_expired:
+            return WrapResponseDto.error("Bad request", "Access token has expired. Please request a new one")
 
-    def register(self, register_info: RegisterInfo):
-        user = self.user_service.create(
-            register_info.username, register_info.age, register_info.email, register_info.phone_number)
-        login_detail = LoginDetail(
-            id=user.id,
-            password_hash=register_info.password
+        return WrapResponseDto.success({
+            "access_token": session.access_token,
+            "refresh_token": session.refresh_token,
+            "user": session.user.to_json()
+        }, "Successfully login")
+
+    def register(register_info: RegisterRequestDto):
+        user: User = User.query.filter_by(email=register_info.email).first()
+        if user:
+            return WrapResponseDto.error(
+                "Bad request",
+                f"User with email '{register_info.email}' has already existed"
+            )
+        user = User.query.filter_by(phone_number=register_info.phone_number).first()
+        if user:
+            return WrapResponseDto.error(
+                "Bad request",
+                f"User with phone number {register_info.phone_number} has already existed"
+            )
+        user = User(
+            id=None,
+            username=register_info.username,
+            phone_number=register_info.phone_number,
+            email=register_info.email,
+            role_id=1
         )
-        self.db.session.add(login_detail)
-        self.db.session.commit()
-        return user
+        password_hash = get_hash_password(register_info.password)
+        login_data = LoginData(
+            user=user,
+            password_hash=password_hash
+        )
+        db.session.add(user)
+        db.session.add(login_data)
+        db.session.commit()
+        return WrapResponseDto.success(
+            user.to_json(),
+            "Successfully registered"
+        )
+
+    def logout(token: str):
+        session: Session = Session.query.filter_by(access_token=token).first()
+        if not session:
+            return WrapResponseDto.error(
+                "Bad request",
+                "Already logout"
+            )
+        db.session.delete(session)
+        db.session.commit()
+        return WrapResponseDto.success(
+            None,
+            "Successfully logout"
+        )
+
+    def request_access_token(refresh_token: str):
+        session: Session = Session.query.filter_by(
+            refresh_token=refresh_token).first()
+        if not session:
+            return WrapResponseDto.error(
+                "Bad request",
+                "Invalid refresh token"
+            )
+        if session.is_refresh_expired:
+            db.session.delete(session)
+            db.session.commit()
+            return WrapResponseDto.error(
+                "Bad request",
+                "Session has expired"
+            )
+        access_token = generate_hash({
+            "user_id": session.user.id,
+            "time": datetime.now().timestamp()
+        })
+        session.access_token = access_token
+        db.session.commit()
+        return WrapResponseDto.success({
+            "access_token": access_token
+        },
+            "Successfully create new access token"
+        )
