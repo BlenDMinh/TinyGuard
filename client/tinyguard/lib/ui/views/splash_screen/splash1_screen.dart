@@ -37,10 +37,6 @@ class _Splash1ScreenState extends State<Splash1Screen> {
 
   @override
   Widget build(BuildContext context) {
-    //SystemChrome.setPreferredOrientations([
-    //  DeviceOrientation.portraitUp,
-    //]);
-
     return BaseView(mobileBuilder: (context) {
       return GestureDetector(
         onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
@@ -123,7 +119,7 @@ class _Splash1ScreenState extends State<Splash1Screen> {
                             fontWeight: FontWeight.w400),
                       ),
                       GestureDetector(
-                        onTap: () => Get.toNamed(Routes.firstSetup),
+                        onTap: () => Get.toNamed(Routes.signIn),
                         child: Container(
                           width: MediaQuery.of(context).size.width / 1.4,
                           padding: EdgeInsets.all(15),

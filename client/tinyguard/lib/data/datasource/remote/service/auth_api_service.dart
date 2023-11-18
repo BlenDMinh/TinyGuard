@@ -1,3 +1,7 @@
+import 'dart:convert';
+
+import 'package:dio/dio.dart';
+import 'package:flutter/material.dart';
 import 'package:tinyguard/data/datasource/remote/api/api_client.dart';
 import 'package:tinyguard/data/datasource/remote/dto/user_credentials.dart';
 import 'package:tinyguard/data/datasource/remote/dto/user_register_credentials.dart';
@@ -7,7 +11,7 @@ import 'package:tinyguard/data/datasource/remote/entity/reset_password_entity.da
 import 'package:tinyguard/data/datasource/remote/entity/user_entity.dart';
 
 enum AuthRoute {
-  login('/login'),
+  login('user/login'),
   resetPassword('/reset-password');
 
   const AuthRoute(this.path);
@@ -21,7 +25,13 @@ class AuthAPIService {
 
   Future<AuthEntity> login(UserCredentials credentials) async {
     String path = AuthRoute.login.path;
-    final response = await client.post(url: path, data: credentials.toJson());
+    debugPrint('credentials');
+    debugPrint(credentials.toJson().toString());
+    final response = await client.post(
+        url: path,
+        data: jsonEncode(credentials.toJson()),
+        requestOptions: Options()
+          ..headers = {"Content-Type": "application/json"});
     return AuthEntity.fromJson(response as Map<String, dynamic>);
   }
 

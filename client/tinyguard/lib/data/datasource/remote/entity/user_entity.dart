@@ -7,6 +7,7 @@ class UserEntity extends BaseResponseApiEntity {
   late int age;
   late String phone_number;
   late String email;
+  late String role;
   late List<DeviceEntity> devices;
 
   UserEntity(super.body);
@@ -20,9 +21,9 @@ class UserEntity extends BaseResponseApiEntity {
     this.devices = [];
     this.id = body['id'];
     this.username = body['username'];
-    this.age = body['age'];
-    this.phone_number = body['phone_number'];
     this.email = body['email'];
+    this.phone_number = body['phone_number'];
+    this.role = body['role'];
     for (var element in body['devices']) {
       this.devices.add(DeviceEntity(element)..user = this);
     }

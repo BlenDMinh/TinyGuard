@@ -1,25 +1,16 @@
-import 'package:tinyguard/data/datasource/remote/entity/item_entity.dart';
+import 'package:tinyguard/data/datasource/remote/entity/user_entity.dart';
 
 class ResultEntity {
-  ItemEntity? item;
+  final String? accessToken;
+  final String? refreshToken;
+  UserEntity? user;
 
-  ResultEntity({this.item});
+  ResultEntity({this.accessToken, this.refreshToken, this.user});
 
   factory ResultEntity.fromJson(Map<String, dynamic> json) {
     return ResultEntity(
-      item: json['Item'] != null
-          ? ItemEntity.fromJson(
-              json['Item'] as Map<String, dynamic>,
-            )
-          : null,
-    );
-  }
-
-  Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = <String, dynamic>{};
-    if (item != null) {
-      data['Item'] = item!.toJson();
-    }
-    return data;
+        accessToken: json['access_token'] as String?,
+        refreshToken: json['refresh_token'] as String?,
+        user: UserEntity.fromJson(json['user'] as Map<String, dynamic>));
   }
 }

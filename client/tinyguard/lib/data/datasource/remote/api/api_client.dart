@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:dio/dio.dart';
+import 'package:flutter/material.dart';
 import 'package:tinyguard/data/datasource/remote/api/api_constants.dart';
 import 'package:tinyguard/data/datasource/remote/api/api_exception.dart';
 import 'package:tinyguard/data/datasource/remote/entity/auth_entity.dart';
@@ -73,6 +74,7 @@ class APIClient {
       }
       String uri = '${FlavorConfig.instance.baseURL}$url';
       LogUtils.methodIn(message: uri);
+      debugPrint(options.headers.toString());
       final response = await dio.post(uri, data: data, options: options);
       return response.data;
     } on DioException catch (dioError) {
@@ -126,6 +128,7 @@ class APIClient {
   }
 
   void onError(DioException err) {
+    debugPrint(err.response!.data.toString());
     if (err.response != null) {
       switch (err.response?.statusCode) {
         case HttpStatus.badRequest:
@@ -175,10 +178,10 @@ extension APIClientRefreshToken on APIClient {
       );
       final authEntity = AuthEntity.fromJson(response as Map<String, dynamic>);
       await sPref.setRefreshToken(
-        value: authEntity.result?.item?.refreshToken ?? Constants.kEmptyString,
+        value: authEntity.result?.refreshToken ?? Constants.kEmptyString,
       );
       await sPref.setAccessToken(
-        value: authEntity.result?.item?.accessToken ?? Constants.kEmptyString,
+        value: authEntity.result?.accessToken ?? Constants.kEmptyString,
       );
     } catch (e) {
       LogUtils.e(e.toString());

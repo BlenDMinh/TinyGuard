@@ -11,6 +11,8 @@ class BaseView<VM extends BaseViewModel?> extends StatelessWidget {
   final Widget Function(BuildContext)? desktopBuilder;
   final Widget Function(BuildContext)? tabletBuilder;
   final bool resizeToAvoidBottomInset;
+  final PreferredSizeWidget? appBar;
+  final bool onWillPop;
 
   const BaseView({
     super.key,
@@ -21,6 +23,8 @@ class BaseView<VM extends BaseViewModel?> extends StatelessWidget {
     this.desktopBuilder,
     this.tabletBuilder,
     this.resizeToAvoidBottomInset = false,
+    this.appBar,
+    this.onWillPop = false,
   });
 
   @override
@@ -39,9 +43,10 @@ class BaseView<VM extends BaseViewModel?> extends StatelessWidget {
 
   Widget _buildBody(BuildContext context) {
     return WillPopScope(
-      onWillPop: () => Future.value(false),
+      onWillPop: () => Future.value(onWillPop),
       child: Scaffold(
         resizeToAvoidBottomInset: resizeToAvoidBottomInset,
+        appBar: appBar,
         body: OrientationBuilder(
           builder: (ctx, __) {
             return Responsive(

@@ -9,8 +9,8 @@ class UserCredentials {
 
   Map<String, dynamic> toJson() {
     return {
-      'email': email,
-      'password': password,
+      "email": email,
+      "password": password,
     };
   }
 }
