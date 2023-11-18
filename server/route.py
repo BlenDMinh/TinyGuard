@@ -1,6 +1,6 @@
 from view.user_api import testuser
 from view.index import index
-from view.device_api import image_input
+from view.device_api import audio_input, image_input
 from view.auth_api import login, register
 
 route = {
@@ -46,7 +46,7 @@ route = {
     },
     "/api/device/audio_input": {
         "endpoint": "api receive audio from device",
-        "view": None,
+        "view": audio_input,
         "methods": ["POST"]
     }
 }
