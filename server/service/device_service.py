@@ -26,4 +26,5 @@ class DeviceService:
         ])
 
     def predict_audio(audio) -> AudioPredict:
+        # return AudioPredict(wavform=torch_wav, sample_rate=torch_sample)
         pass
