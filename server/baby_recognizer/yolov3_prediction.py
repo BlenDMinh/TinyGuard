@@ -1,3 +1,4 @@
+from pathlib import Path
 import cv2
 import numpy as np
 from yolo3_utils import cells_to_bboxes, non_max_suppression, plot_image
@@ -9,10 +10,12 @@ import albumentations as A
 from albumentations.pytorch import ToTensorV2
 
 model = YOLOv3(num_classes=config.CLASS_NUM).to(config.DEVICE)
-checkpoint = torch.load('checkpoint90.pth.tar', map_location=config.DEVICE)
+checkpoint = torch.load('checkpoint.pth.tar',
+                        map_location=config.DEVICE)
 model.load_state_dict(checkpoint["state_dict"])
 
-image = np.array(Image.open('./dataset/test/1.jpg').convert('RGB'))
+image = np.array(Image.open(
+    './dataset/test/z4807708284896_33c54a53504037dead358fdd0894df9a.jpg').convert('RGB'))
 transforms = A.Compose(
     [
         A.LongestMaxSize(max_size=config.IMAGE_SIZE),
@@ -66,12 +69,18 @@ def draw_box(image, bboxs):
 
 
 frame_step = 1
+VIDEO_PATH = Path('./dataset/test/video.mp4')
 
 
 def plot_video():
     image_counter = 0
     read_counter = 0
-    src = cv2.VideoCapture('./dataset/test/video.mp4')
+    src = cv2.VideoCapture(str(VIDEO_PATH))
+    video_name = VIDEO_PATH.stem
+    result = cv2.VideoWriter(f'./{VIDEO_PATH.parent}/{video_name}_out.avi',
+                             -1,
+                             30, (416, 416))
+
     while src.isOpened():
         ret, img = src.read()
         if ret and read_counter % frame_step == 0:
@@ -81,7 +90,6 @@ def plot_video():
                 'image'].unsqueeze(0).to(config.DEVICE)
             y = model(x)
             trans_img = x[0].permute(1, 2, 0).cpu().numpy()
-            print(trans_img.shape)
             trans_img = cv2.cvtColor(trans_img, cv2.COLOR_RGB2BGR)
             bboxes = [[] for _ in range(x.shape[0])]
             for i in range(3):
@@ -95,8 +103,9 @@ def plot_video():
             nms_boxes = non_max_suppression(
                 bboxes[0], iou_threshold=0.5, threshold=0.7, box_format="midpoint",
             )
-            print(nms_boxes)
             image = draw_box(trans_img, nms_boxes)
+            image = cv2.resize(image, (416, 416))
+            result.write(image)
             cv2.imshow('Frame', image)
             key = cv2.waitKey(1)
             if key == ord('q'):
@@ -106,8 +115,7 @@ def plot_video():
             break
         read_counter += 1
     src.release()
-
-
+    result.release()
 plot_video()
 
 

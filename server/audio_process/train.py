@@ -15,22 +15,26 @@ def create_data_loader(train_data, batch_size):
     return train_dataloader
 
 
-def train_single_epoch(model, data_loader, loss_fn, optimiser, device):
-    model.train()
+def step(model, data_loader, loss_fn, optimiser, device, is_train=True):
+    if is_train:
+        model.train()
     total_loss = 0
     correct = 0
     total = 0
-    for input, target in tqdm(data_loader):
+    loop = tqdm(data_loader)
+    for input, target in loop:
         input, target = input.to(device), target.to(device)
 
         # calculate loss
         prediction = model(input)
         loss = loss_fn(prediction, target)
 
-        # backpropagate error and update weights
-        optimiser.zero_grad()
-        loss.backward()
-        optimiser.step()
+        if is_train:
+            # backpropagate error and update weights
+            optimiser.zero_grad()
+            loss.backward()
+            optimiser.step()
+
         # Calculate accuracy
         _, predicted = torch.max(prediction, 1)
         total += target.size(0)
@@ -38,19 +42,37 @@ def train_single_epoch(model, data_loader, loss_fn, optimiser, device):
 
         total_loss += loss.item()
 
+        loop.set_postfix(loss=loss.item(), correct=(
+            predicted == target).sum().item())
+
     # Calculate accuracy
     accuracy = 100 * correct / total
     average_loss = total_loss / len(data_loader)
 
     print(f"Loss: {average_loss:.4f}, Accuracy: {accuracy:.2f}%")
+    return average_loss, accuracy
 
 
-def train(model, data_loader, loss_fn, optimiser, device, epochs):
+def train(model, train_data_loader, test_data_loader, loss_fn, optimiser, device, epochs):
+    losses = []
+    accs = []
+    test_losses = []
+    test_accs = []
     for i in range(epochs):
         print(f"Epoch {i+1}")
-        train_single_epoch(model, data_loader, loss_fn, optimiser, device)
+        loss, acc = step(
+            model, train_data_loader, loss_fn, optimiser, device)
+        losses.append(loss)
+        accs.append(acc)
+
+        test_loss, test_acc = step(
+            model, test_data_loader, loss_fn, optimiser, device, is_train=False)
+        test_losses.append(test_loss)
+        test_accs.append(test_acc)
+        print(f"Test Loss: {test_loss:10f}Test Accuracy: {test_acc:10f}")
         print("---------------------------")
     print("Finished training")
+    return losses, accs, test_losses, test_accs
 
 
 mel_spectrogram = torchaudio.transforms.MelSpectrogram(
@@ -70,8 +92,10 @@ if __name__ == "__main__":
 
     # instantiating our dataset object and create data loader
 
-    ds = CryDataset(mel_spectrogram, device, audio_dir='clean')
-    train_dataloader = create_data_loader(ds, BATCH_SIZE)
+    train_ds = CryDataset(mel_spectrogram, device, csv_path='train_data.csv')
+    test_ds = CryDataset(mel_spectrogram, device, csv_path='test_data.csv')
+    train_dataloader = create_data_loader(train_ds, BATCH_SIZE)
+    test_dataloader = create_data_loader(test_ds, BATCH_SIZE)
 
     # construct model and assign it to device
     cnn = CNNNetwork().to(device)
@@ -83,8 +107,19 @@ if __name__ == "__main__":
                                  lr=LEARNING_RATE)
 
     # train model
-    train(cnn, train_dataloader, loss_fn, optimiser, device, EPOCHS)
+    losses, accs, test_losses, test_accs = train(cnn, train_dataloader, test_dataloader, loss_fn,
+                                                 optimiser, device, EPOCHS)
 
     # save model
     torch.save(cnn.state_dict(), "cnnnet.pth")
     print("Trained feed forward net saved at cnnnet.pth")
+
+    with open('losses.txt', 'w') as f:
+        f.write(str(losses))
+    with open('accuracy.txt', 'w') as f:
+        f.write(str(accs))
+
+    with open('test_losses.txt', 'w') as f:
+        f.write(str(test_losses))
+    with open('test_accuracy.txt', 'w') as f:
+        f.write(str(test_accs))
