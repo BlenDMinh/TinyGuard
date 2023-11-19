@@ -116,6 +116,38 @@ def plot_video():
         read_counter += 1
     src.release()
     result.release()
+plot_video()
 
 
-# plot_video()
+def predict(image):
+    image = np.array(image.convert('RGB'))
+    transforms = A.Compose(
+        [
+            A.LongestMaxSize(max_size=config.IMAGE_SIZE),
+            A.PadIfNeeded(
+                min_height=config.IMAGE_SIZE, min_width=config.IMAGE_SIZE, border_mode=cv2.BORDER_CONSTANT
+            ),
+            A.Normalize(mean=[0, 0, 0], std=[1, 1, 1], max_pixel_value=255,),
+            ToTensorV2(),
+        ],
+    )
+    image = transforms(image=image)['image']
+    anchors = (
+        torch.tensor(config.ANCHORS)
+        * torch.tensor(config.STRIDE).unsqueeze(1).unsqueeze(1).repeat(1, 3, 2)
+    ).to(config.DEVICE)
+    with torch.no_grad():
+        out = model(image.unsqueeze(0).to(config.DEVICE))
+        bboxes = [[] for _ in range(image.shape[0])]
+        for i in range(3):
+            batch_size, A, S, _, _ = out[i].shape
+            anchor = anchors[i]
+            boxes_scale_i = cells_to_bboxes(
+                out[i], anchor, S=S, is_preds=True
+            )
+            for idx, (box) in enumerate(boxes_scale_i):
+                bboxes[idx] += box
+    nms_boxes = non_max_suppression(
+        bboxes[0], iou_threshold=0.5, threshold=0.6, box_format="midpoint",
+    )
+    return nms_boxes
