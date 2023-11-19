@@ -1,17 +1,17 @@
-#include "ble_server.h"
-
-void serialInit() {
+#include "camera_web_server.h"
+void serialInit()
+{
   Serial.begin(115200);
   Serial.setDebugOutput(true);
 }
 
-void setup() {
+void setup()
+{
   serialInit();
-  // bleInit();
   webServerInit();
 }
 
-void loop() {
+void loop()
+{
   webServerLoop();
 }
-
