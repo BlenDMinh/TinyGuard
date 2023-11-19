@@ -12,108 +12,99 @@ class RegisterView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BaseView(
+      resizeToAvoidBottomInset: true,
       mobileBuilder: (context) => Background(
         child: SingleChildScrollView(
           child: Responsive(
-            mobile: const MobileRegisterView(),
+            mobile: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: <Widget>[
+                const SignUpScreenTopImage(),
+                Row(
+                  children: [
+                    Spacer(),
+                    Expanded(
+                      flex: 8,
+                      child: Form(
+                        child: Column(
+                          children: [
+                            TextFormField(
+                              keyboardType: TextInputType.emailAddress,
+                              textInputAction: TextInputAction.next,
+                              cursorColor: Colors.black,
+                              onSaved: (email) {},
+                              decoration: InputDecoration(
+                                hintText: "Your email",
+                                prefixIcon: Padding(
+                                  padding: const EdgeInsets.all(16),
+                                  child: Icon(Icons.person),
+                                ),
+                              ),
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.only(top: 16),
+                              child: TextFormField(
+                                textInputAction: TextInputAction.done,
+                                obscureText: true,
+                                cursorColor: Colors.black,
+                                decoration: InputDecoration(
+                                  hintText: "Your phone number",
+                                  prefixIcon: Padding(
+                                    padding: const EdgeInsets.all(16),
+                                    child: Icon(Icons.phone),
+                                  ),
+                                ),
+                              ),
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 16),
+                              child: TextFormField(
+                                textInputAction: TextInputAction.done,
+                                obscureText: true,
+                                cursorColor: Colors.black,
+                                decoration: InputDecoration(
+                                  hintText: "Your password",
+                                  prefixIcon: Padding(
+                                    padding: const EdgeInsets.all(16),
+                                    child: Icon(Icons.lock),
+                                  ),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            Hero(
+                              tag: "login_btn",
+                              child: ElevatedButton(
+                                style: ButtonStyle(
+                                    backgroundColor:
+                                        MaterialStateProperty.all<Color>(
+                                            Colors.deepPurpleAccent)),
+                                onPressed: () {},
+                                child: Text(
+                                  "Sign up".toUpperCase(),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 16),
+                            AlreadyHaveAnAccountCheck(
+                              login: false,
+                              press: () {
+                                Get.back();
+                              },
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    Spacer(),
+                  ],
+                ),
+                // const SocalSignUp()
+              ],
+            ),
           ),
         ),
       ),
-    );
-  }
-}
-
-class MobileRegisterView extends StatelessWidget {
-  const MobileRegisterView({
-    Key? key,
-  }) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: <Widget>[
-        const SignUpScreenTopImage(),
-        Row(
-          children: [
-            Spacer(),
-            Expanded(
-              flex: 8,
-              child: Form(
-                child: Column(
-                  children: [
-                    TextFormField(
-                      keyboardType: TextInputType.emailAddress,
-                      textInputAction: TextInputAction.next,
-                      cursorColor: Colors.black,
-                      onSaved: (email) {},
-                      decoration: InputDecoration(
-                        hintText: "Your email",
-                        prefixIcon: Padding(
-                          padding: const EdgeInsets.all(16),
-                          child: Icon(Icons.person),
-                        ),
-                      ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.only(top: 16),
-                      child: TextFormField(
-                        textInputAction: TextInputAction.done,
-                        obscureText: true,
-                        cursorColor: Colors.black,
-                        decoration: InputDecoration(
-                          hintText: "Your phone number",
-                          prefixIcon: Padding(
-                            padding: const EdgeInsets.all(16),
-                            child: Icon(Icons.phone),
-                          ),
-                        ),
-                      ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                      child: TextFormField(
-                        textInputAction: TextInputAction.done,
-                        obscureText: true,
-                        cursorColor: Colors.black,
-                        decoration: InputDecoration(
-                          hintText: "Your password",
-                          prefixIcon: Padding(
-                            padding: const EdgeInsets.all(16),
-                            child: Icon(Icons.lock),
-                          ),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Hero(
-                      tag: "login_btn",
-                      child: ElevatedButton(
-                        style: ButtonStyle(
-                            backgroundColor: MaterialStateProperty.all<Color>(
-                                Colors.deepPurpleAccent)),
-                        onPressed: () {},
-                        child: Text(
-                          "Sign up".toUpperCase(),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    AlreadyHaveAnAccountCheck(
-                      login: false,
-                      press: () {
-                        Get.back();
-                      },
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            Spacer(),
-          ],
-        ),
-        // const SocalSignUp()
-      ],
     );
   }
 }

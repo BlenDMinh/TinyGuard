@@ -20,7 +20,7 @@ class APIClient {
       InterceptorsWrapper(
         onRequest: (request, handler) {
           if (accessToken != null && accessToken.isNotEmpty) {
-            request.headers['Authorization'] = 'Bearer $accessToken';
+            request.headers['Authorization'] = '$accessToken';
           }
           return handler.next(request);
         },
@@ -44,7 +44,7 @@ class APIClient {
     final String? accessToken = sPref.accessToken;
     Options options = Options();
     if (accessToken != null && accessToken.isNotEmpty) {
-      options = Options(headers: {'Authorization': 'Bearer $accessToken'});
+      options = Options(headers: {'Authorization': '$accessToken'});
     }
     try {
       String uri = '${FlavorConfig.instance.baseURL}$url';
@@ -70,7 +70,7 @@ class APIClient {
         options = requestOptions;
       }
       if (accessToken != null && accessToken.isNotEmpty) {
-        options.headers = {'Authorization': 'Bearer $accessToken'};
+        options.headers = {'Authorization': '$accessToken'};
       }
       String uri = '${FlavorConfig.instance.baseURL}$url';
       LogUtils.methodIn(message: uri);
@@ -94,7 +94,7 @@ class APIClient {
         options = requestOptions;
       }
       if (accessToken != null && accessToken.isNotEmpty) {
-        options.headers = {'Authorization': 'Bearer $accessToken'};
+        options.headers = {'Authorization': '$accessToken'};
       }
       String uri = '${FlavorConfig.instance.baseURL}$url';
       LogUtils.methodIn(message: uri);
@@ -116,7 +116,7 @@ class APIClient {
         options = requestOptions;
       }
       if (accessToken != null && accessToken.isNotEmpty) {
-        options.headers = {'Authorization': 'Bearer $accessToken'};
+        options.headers = {'Authorization': '$accessToken'};
       }
       String uri = '${FlavorConfig.instance.baseURL}$url';
       LogUtils.methodIn(message: uri);
@@ -128,7 +128,10 @@ class APIClient {
   }
 
   void onError(DioException err) {
-    debugPrint(err.response!.data.toString());
+    debugPrint('ON ERROR: ' +
+        err.response!.data.toString() +
+        ' STATUS CODE: ' +
+        err.response!.statusCode.toString());
     if (err.response != null) {
       switch (err.response?.statusCode) {
         case HttpStatus.badRequest:
@@ -191,7 +194,7 @@ extension APIClientRefreshToken on APIClient {
 
   Future<Response<dynamic>> _retry(RequestOptions requestOptions) async {
     final options = Options(method: requestOptions.method);
-    options.headers = {'Authorization': 'Bearer ${sPref.accessToken!}'};
+    options.headers = {'Authorization': '${sPref.accessToken!}'};
     return dio.request<dynamic>(
       requestOptions.path,
       data: requestOptions.data,

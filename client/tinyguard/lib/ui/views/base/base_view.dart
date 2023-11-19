@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:tinyguard/ui/views/base/responsive.dart';
-import 'package:tinyguard/view_models.dart/base_view_model.dart';
+import 'package:tinyguard/view_models/base_view_model.dart';
 
 class BaseView<VM extends BaseViewModel?> extends StatelessWidget {
   final Color? backgroundColor;

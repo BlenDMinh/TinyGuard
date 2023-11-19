@@ -6,7 +6,7 @@ import 'package:tinyguard/ui/shared/already_have_an_account_acheck.dart';
 import 'package:tinyguard/ui/shared/background.dart';
 import 'package:tinyguard/ui/views/base/base_view.dart';
 import 'package:tinyguard/ui/views/base/responsive.dart';
-import 'package:tinyguard/view_models.dart/log_in_view_model.dart';
+import 'package:tinyguard/view_models/log_in_view_model.dart';
 import 'components/login_screen_top_image.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -27,6 +27,7 @@ class _LoginScreenState extends State<LoginScreen> {
   Widget build(BuildContext context) {
     return BaseView(
       viewModel: viewModel,
+      resizeToAvoidBottomInset: true,
       mobileBuilder: (context) => Background(
         child: SingleChildScrollView(
           child: Responsive(
@@ -79,10 +80,10 @@ class _LoginScreenState extends State<LoginScreen> {
                                         MaterialStateProperty.all<Color>(
                                             Colors.deepPurpleAccent)),
                                 onPressed: () async {
-                                  await viewModel.onLoginPressed(
-                                    onSuccess: () =>
-                                        debugPrint('Login success'),
-                                  );
+                                  await viewModel.onLoginPressed(onSuccess: () {
+                                    debugPrint('Login success');
+                                    Get.toNamed(Routes.firstSetup);
+                                  });
                                 },
                                 child: Text(
                                   "Login".toUpperCase(),

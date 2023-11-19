@@ -2,13 +2,13 @@ import 'package:tinyguard/data/datasource/remote/entity/base_response_entity.dar
 import 'package:tinyguard/data/datasource/remote/entity/device_entity.dart';
 
 class UserEntity extends BaseResponseApiEntity {
-  late int id;
-  late String username;
-  late int age;
-  late String phone_number;
-  late String email;
-  late String role;
-  late List<DeviceEntity> devices;
+  late int? id;
+  late String? username;
+  late int? age;
+  late String? phone_number;
+  late String? email;
+  late String? role;
+  List<DeviceEntity> devices = [];
 
   UserEntity(super.body);
 
@@ -24,8 +24,10 @@ class UserEntity extends BaseResponseApiEntity {
     this.email = body['email'];
     this.phone_number = body['phone_number'];
     this.role = body['role'];
-    for (var element in body['devices']) {
-      this.devices.add(DeviceEntity(element)..user = this);
+    if (body['devices'] != null) {
+      for (var element in body['devices']) {
+        this.devices.add(DeviceEntity(element)..user = this);
+      }
     }
   }
 }

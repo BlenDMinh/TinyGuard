@@ -3,7 +3,7 @@ import 'package:tinyguard/data/datasource/remote/api/api_client.dart';
 import 'package:tinyguard/data/datasource/remote/service/auth_api_service.dart';
 import 'package:tinyguard/data/repository/user_repository.dart';
 import 'package:tinyguard/data/shared_preferences/spref_auth_model.dart';
-import 'package:tinyguard/view_models.dart/log_in_view_model.dart';
+import 'package:tinyguard/view_models/log_in_view_model.dart';
 
 GetIt getIt = GetIt.instance;
 

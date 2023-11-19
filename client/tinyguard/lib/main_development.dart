@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
+import 'package:tinyguard/data/repository/user_repository.dart';
+import 'package:tinyguard/data/shared_preferences/spref_auth_model.dart';
 import 'package:tinyguard/enums.dart';
 import 'package:tinyguard/flavor_config.dart';
 import 'package:tinyguard/locator_config.dart';
@@ -20,10 +22,9 @@ void main() async {
   ]);
   setupLocator();
   FlavorConfig(
-      baseApiUrl: "http://192.168.5.22:5000",
+      baseApiUrl: "http://192.168.5.200:5000",
       flavor: Flavor.development,
       versionAPI: '/api/');
-
   runApp(const MainApp());
 }
 
