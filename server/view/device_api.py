@@ -16,3 +16,8 @@ def image_input():
     emit(Event.ImagePrediction, prediction.to_json(),
          namespace="/", broadcast=True)
     return jsonify(prediction.to_json())
+
+def audio_input():
+    audio = request.files.get('audioFile')
+    audio.save('audio.wav')
+    return Response("OK")
