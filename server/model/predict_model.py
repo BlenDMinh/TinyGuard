@@ -29,7 +29,7 @@ class ImagePredict:
             is_crying = is_crying or bbox.label == 0
         self.is_crying = is_crying
 
-    def to_json(self, to_string: bool) -> dict[str, any] | str:
+    def to_json(self, to_string: bool = False) -> dict[str, any] | str:
         json_obj = dict(bboxes=list(map(lambda e: e.to_json(),
                         self.bboxes)), is_crying=self.is_crying)
         if to_string:

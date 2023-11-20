@@ -1,4 +1,3 @@
-from pathlib import Path
 import cv2
 import numpy as np
 from yolo3_utils import cells_to_bboxes, non_max_suppression, plot_image
@@ -15,7 +14,7 @@ checkpoint = torch.load('checkpoint.pth.tar',
 model.load_state_dict(checkpoint["state_dict"])
 
 image = np.array(Image.open(
-    './dataset/test/z4807708284896_33c54a53504037dead358fdd0894df9a.jpg').convert('RGB'))
+    './dataset/test/634B54B68E12202DE8ACC0A1EF806B9B_video_dashinit.jpg').convert('RGB'))
 transforms = A.Compose(
     [
         A.LongestMaxSize(max_size=config.IMAGE_SIZE),
@@ -43,7 +42,7 @@ with torch.no_grad():
         for idx, (box) in enumerate(boxes_scale_i):
             bboxes[idx] += box
 nms_boxes = non_max_suppression(
-    bboxes[0], iou_threshold=0.5, threshold=0.6, box_format="midpoint",
+    bboxes[0], iou_threshold=0.5, threshold=0.8, box_format="midpoint",
 )
 print(nms_boxes)
 plot_image(image.permute(1, 2, 0).detach().cpu(), nms_boxes)
@@ -69,18 +68,12 @@ def draw_box(image, bboxs):
 
 
 frame_step = 1
-VIDEO_PATH = Path('./dataset/test/video.mp4')
 
 
-def plot_video():
+def plot_video(nums_of_baby=1):
     image_counter = 0
     read_counter = 0
-    src = cv2.VideoCapture(str(VIDEO_PATH))
-    video_name = VIDEO_PATH.stem
-    result = cv2.VideoWriter(f'./{VIDEO_PATH.parent}/{video_name}_out.avi',
-                             -1,
-                             30, (416, 416))
-
+    src = cv2.VideoCapture('./dataset/test/video2.mp4')
     while src.isOpened():
         ret, img = src.read()
         if ret and read_counter % frame_step == 0:
@@ -90,6 +83,7 @@ def plot_video():
                 'image'].unsqueeze(0).to(config.DEVICE)
             y = model(x)
             trans_img = x[0].permute(1, 2, 0).cpu().numpy()
+            print(trans_img.shape)
             trans_img = cv2.cvtColor(trans_img, cv2.COLOR_RGB2BGR)
             bboxes = [[] for _ in range(x.shape[0])]
             for i in range(3):
@@ -101,11 +95,10 @@ def plot_video():
                 for idx, (box) in enumerate(boxes_scale_i):
                     bboxes[idx] += box
             nms_boxes = non_max_suppression(
-                bboxes[0], iou_threshold=0.5, threshold=0.7, box_format="midpoint",
+                bboxes[0], iou_threshold=0.5, threshold=0.8, box_format="midpoint",
             )
-            image = draw_box(trans_img, nms_boxes)
-            image = cv2.resize(image, (416, 416))
-            result.write(image)
+            print(nms_boxes)
+            image = draw_box(trans_img, nms_boxes[:nums_of_baby])
             cv2.imshow('Frame', image)
             key = cv2.waitKey(1)
             if key == ord('q'):
@@ -115,7 +108,8 @@ def plot_video():
             break
         read_counter += 1
     src.release()
-    result.release()
+
+
 plot_video()
 
 
