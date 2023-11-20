@@ -54,6 +54,46 @@ typedef struct {
 // 4 for flash led or 33 for normal led
 #define LED_GPIO_NUM       4
 
+camera_fb_t * fb = NULL;
+
+#include <driver/i2s.h>
+#define I2S_WS 13
+#define I2S_SD 15
+#define I2S_SCK 14
+#define I2S_PORT I2S_NUM_1
+#define I2S_SAMPLE_RATE   (16000)
+#define I2S_SAMPLE_BITS   (16)
+#define I2S_READ_LEN      (16 * 1024)
+#define RECORD_TIME       (5) //Seconds
+#define I2S_CHANNEL_NUM   (1)
+#define FLASH_RECORD_SIZE (I2S_CHANNEL_NUM * I2S_SAMPLE_RATE * I2S_SAMPLE_BITS / 8 * RECORD_TIME)
+const int headerSize = 44;
+
+void i2sInit(){
+  i2s_config_t i2s_config = {
+    .mode = (i2s_mode_t)(I2S_MODE_MASTER | I2S_MODE_RX),
+    .sample_rate = I2S_SAMPLE_RATE,
+    .bits_per_sample = i2s_bits_per_sample_t(I2S_SAMPLE_BITS),
+    .channel_format = I2S_CHANNEL_FMT_ONLY_LEFT,
+    .communication_format = i2s_comm_format_t(I2S_COMM_FORMAT_I2S | I2S_COMM_FORMAT_I2S_MSB),
+    .intr_alloc_flags = 0,
+    .dma_buf_count = 32,
+    .dma_buf_len = 512,
+    .use_apll = 1
+  };
+
+  i2s_driver_install(I2S_PORT, &i2s_config, 0, NULL);
+
+  const i2s_pin_config_t pin_config = {
+    .bck_io_num = I2S_SCK,
+    .ws_io_num = I2S_WS,
+    .data_out_num = -1,
+    .data_in_num = I2S_SD
+  };
+
+  i2s_set_pin(I2S_PORT, &pin_config);
+}
+
 static const char* _STREAM_CONTENT_TYPE = "multipart/x-mixed-replace;boundary=" PART_BOUNDARY;
 static const char* _STREAM_BOUNDARY = "\r\n--" PART_BOUNDARY "\r\n";
 static const char* _STREAM_PART = "Content-Type: image/jpeg\r\nContent-Length: %u\r\n\r\n";
@@ -74,11 +114,11 @@ static size_t jpg_encode_stream(void * arg, size_t index, const void* data, size
 }
 
 static esp_err_t capture_handler(httpd_req_t *req){
-    camera_fb_t * fb = NULL;
     esp_err_t res = ESP_OK;
     int64_t fr_start = esp_timer_get_time();
 
-    fb = esp_camera_fb_get();
+    if(fb == NULL)
+      fb = esp_camera_fb_get();
     if (!fb) {
         Serial.println("Camera capture failed");
         httpd_resp_send_500(req);
@@ -113,7 +153,6 @@ static esp_err_t capture_handler(httpd_req_t *req){
 }
 
 static esp_err_t stream_handler(httpd_req_t *req){
-  camera_fb_t * fb = NULL;
   esp_err_t res = ESP_OK;
   size_t _jpg_buf_len = 0;
   uint8_t * _jpg_buf = NULL;
@@ -203,9 +242,259 @@ void startCameraServer(){
     }
 }
 
-void webServerInit() {
-  WRITE_PERI_REG(RTC_CNTL_BROWN_OUT_REG, 0); //disable brownout detector
+
+String serverName = "192.168.1.184";   // REPLACE WITH YOUR Raspberry Pi IP ADDRESS
+//String serverName = "example.com";   // OR REPLACE WITH YOUR DOMAIN NAME
+
+String imageServerPath = "/api/device/image_input";
+String audioServerPath = "/api/device/audio_input";
+
+const int serverPort = 5000;
+
+WiFiClient client;
+
+const int timerInterval = 30000;    // time between each HTTP POST image
+unsigned long previousMillis = 0;   // last time image was sent
+
+String sendPhoto() {
+  String getAll;
+  String getBody;
+
+  fb = esp_camera_fb_get();
+  if(!fb) {
+    Serial.println("Camera capture failed");
+    delay(1000);
+    ESP.restart();
+  }
   
+  Serial.println("Connecting to server: " + serverName);
+
+  if (client.connect(serverName.c_str(), serverPort)) {
+    Serial.println("Connection successful!");    
+    String head = "--RandomNerdTutorials\r\nContent-Disposition: form-data; name=\"imageFile\"; filename=\"esp32-cam.jpg\"\r\nContent-Type: image/jpeg\r\n\r\n";
+    String tail = "\r\n--RandomNerdTutorials--\r\n";
+
+    uint32_t imageLen = fb->len;
+    uint32_t extraLen = head.length() + tail.length();
+    uint32_t totalLen = imageLen + extraLen;
+  
+    client.println("POST " + imageServerPath + " HTTP/1.1");
+    client.println("Host: " + serverName);
+    client.println("Content-Length: " + String(totalLen));
+    client.println("Content-Type: multipart/form-data; boundary=RandomNerdTutorials");
+    client.println();
+    client.print(head);
+  
+    uint8_t *fbBuf = fb->buf;
+    size_t fbLen = fb->len;
+    for (size_t n=0; n<fbLen; n=n+1024) {
+      if (n+1024 < fbLen) {
+        client.write(fbBuf, 1024);
+        fbBuf += 1024;
+      }
+      else if (fbLen%1024>0) {
+        size_t remainder = fbLen%1024;
+        client.write(fbBuf, remainder);
+      }
+    }   
+    client.print(tail);
+    
+    esp_camera_fb_return(fb);
+    
+    int timoutTimer = 5000;
+    long startTimer = millis();
+    boolean state = false;
+    
+    while ((startTimer + timoutTimer) > millis()) {
+      Serial.print(".");
+      delay(100);      
+      while (client.available()) {
+        char c = client.read();
+        if (c == '\n') {
+          if (getAll.length()==0) { state=true; }
+          getAll = "";
+        }
+        else if (c != '\r') { getAll += String(c); }
+        if (state==true) { getBody += String(c); }
+        startTimer = millis();
+      }
+      if (getBody.length()>0) { break; }
+    }
+    Serial.println();
+    client.stop();
+    Serial.println(getBody);
+  }
+  else {
+    getBody = "Connection to " + serverName +  " failed.";
+    Serial.println(getBody);
+  }
+  return getBody;
+}
+
+void wavHeader(byte* header, int wavSize){
+  header[0] = 'R';
+  header[1] = 'I';
+  header[2] = 'F';
+  header[3] = 'F';
+  unsigned int fileSize = wavSize + headerSize - 8;
+  header[4] = (byte)(fileSize & 0xFF);
+  header[5] = (byte)((fileSize >> 8) & 0xFF);
+  header[6] = (byte)((fileSize >> 16) & 0xFF);
+  header[7] = (byte)((fileSize >> 24) & 0xFF);
+  header[8] = 'W';
+  header[9] = 'A';
+  header[10] = 'V';
+  header[11] = 'E';
+  header[12] = 'f';
+  header[13] = 'm';
+  header[14] = 't';
+  header[15] = ' ';
+  header[16] = 0x10;
+  header[17] = 0x00;
+  header[18] = 0x00;
+  header[19] = 0x00;
+  header[20] = 0x01;
+  header[21] = 0x00;
+  header[22] = 0x01;
+  header[23] = 0x00;
+  header[24] = 0x80;
+  header[25] = 0x3E;
+  header[26] = 0x00;
+  header[27] = 0x00;
+  header[28] = 0x00;
+  header[29] = 0x7D;
+  header[30] = 0x00;
+  header[31] = 0x00;
+  header[32] = 0x02;
+  header[33] = 0x00;
+  header[34] = 0x10;
+  header[35] = 0x00;
+  header[36] = 'd';
+  header[37] = 'a';
+  header[38] = 't';
+  header[39] = 'a';
+  header[40] = (byte)(wavSize & 0xFF);
+  header[41] = (byte)((wavSize >> 8) & 0xFF);
+  header[42] = (byte)((wavSize >> 16) & 0xFF);
+  header[43] = (byte)((wavSize >> 24) & 0xFF);
+}
+
+void i2s_adc_data_scale(uint8_t * d_buff, uint8_t* s_buff, uint32_t len)
+{
+    uint32_t j = 0;
+    uint32_t dac_value = 0;
+    for (int i = 0; i < len; i += 2) {
+        dac_value = ((((uint16_t) (s_buff[i + 1] & 0xf) << 8) | ((s_buff[i + 0]))));
+        d_buff[j++] = 0;
+        d_buff[j++] = dac_value * 256 / 2048;
+    }
+}
+
+String sendAudio() {
+  String getAll;
+  String getBody;
+
+  Serial.println("Connecting to server: " + serverName);
+
+  if (client.connect(serverName.c_str(), serverPort)) {
+    Serial.println("Connection successful!");    
+    String head = "--RandomNerdTutorials\r\nContent-Disposition: form-data; name=\"audioFile\"; filename=\"esp32-audio.wav\"\r\nContent-Type: */*\r\n\r\n";
+    String tail = "\r\n--RandomNerdTutorials--\r\n";
+
+    uint32_t length = head.length() + FLASH_RECORD_SIZE + headerSize + tail.length();
+    client.println("POST " + audioServerPath + " HTTP/1.1");
+    client.println("Host: " + serverName);
+    client.println("Content-Length: " + String(length));
+    client.println("Content-Type: multipart/form-data; boundary=RandomNerdTutorials");
+    client.println();
+    client.print(head);
+
+    byte header[headerSize];
+    wavHeader(header, FLASH_RECORD_SIZE);
+
+    // uint32_t imageLen = fb->len;
+    // uint32_t totalLen = imageLen + extraLen;
+
+    client.write((char*) header, headerSize);
+
+    int i2s_read_len = I2S_READ_LEN;
+    int flash_wr_size = 0;
+    size_t bytes_read;
+
+    char* i2s_read_buff = (char*) calloc(i2s_read_len, sizeof(char));
+    uint8_t* flash_write_buff = (uint8_t*) calloc(i2s_read_len, sizeof(char));
+
+    i2s_read(I2S_PORT, (void*) i2s_read_buff, i2s_read_len, &bytes_read, portMAX_DELAY);
+    i2s_read(I2S_PORT, (void*) i2s_read_buff, i2s_read_len, &bytes_read, portMAX_DELAY);
+    
+    Serial.println(" *** Recording Start *** ");
+    while (flash_wr_size < FLASH_RECORD_SIZE) {
+        //read data from I2S bus, in this case, from ADC.
+        i2s_read(I2S_PORT, (void*) i2s_read_buff, min(i2s_read_len, FLASH_RECORD_SIZE - flash_wr_size), &bytes_read, portMAX_DELAY);
+        //example_disp_buf((uint8_t*) i2s_read_buff, 64);
+        //save original data from I2S(ADC) into flash.
+        i2s_adc_data_scale(flash_write_buff, (uint8_t*)i2s_read_buff, min(i2s_read_len, FLASH_RECORD_SIZE - flash_wr_size));
+        client.write((const char*) flash_write_buff, min(i2s_read_len, FLASH_RECORD_SIZE - flash_wr_size));
+        flash_wr_size += min(i2s_read_len, FLASH_RECORD_SIZE - flash_wr_size);
+        ets_printf("Sound recording %u%%\n", flash_wr_size * 100 / FLASH_RECORD_SIZE);
+        ets_printf("Never Used Stack Size: %u\n", uxTaskGetStackHighWaterMark(NULL));
+        Serial.print((char) flash_write_buff[0]);
+    }
+    // file.close();
+
+    free(i2s_read_buff);
+    i2s_read_buff = NULL;
+    free(flash_write_buff);
+    flash_write_buff = NULL;
+    
+    // listSPIFFS();
+    // vTaskDelete(NULL);
+    // client.write((uint8_t*) buffer, 1024); 
+    client.print(tail);
+    
+    // esp_camera_fb_return(fb);
+    
+    int timoutTimer = 5000;
+    long startTimer = millis();
+    boolean state = false;
+    
+    while ((startTimer + timoutTimer) > millis()) {
+      Serial.print(".");
+      delay(100);      
+      while (client.available()) {
+        char c = client.read();
+        if (c == '\n') {
+          if (getAll.length()==0) { state=true; }
+          getAll = "";
+        }
+        else if (c != '\r') { getAll += String(c); }
+        if (state==true) { getBody += String(c); }
+        startTimer = millis();
+      }
+      if (getBody.length()>0) { break; }
+    }
+    Serial.println();
+    client.stop();
+    Serial.println(getBody);
+  }
+  else {
+    getBody = "Connection to " + serverName +  " failed.";
+    Serial.println(getBody);
+  }
+  return getBody;
+}
+
+void micTask(void* parameter) {
+  i2sInit();
+  i2s_start(I2S_PORT);
+
+  size_t bytesIn = 0;
+  while (1) {
+    sendAudio();
+  }
+}
+
+esp_err_t camInit() {
   camera_config_t config;
   config.ledc_channel = LEDC_CHANNEL_0;
   config.ledc_timer = LEDC_TIMER_0;
@@ -236,70 +525,88 @@ void webServerInit() {
   
   // Camera init
   esp_err_t err = esp_camera_init(&config);
-  if (err != ESP_OK) {
-    Serial.printf("Camera init failed with error 0x%x", err);
-    return;
+  return err;
+}
+
+void camTask(void* parameter) {
+    esp_err_t err = camInit();
+    if (err != ESP_OK) {
+      Serial.printf("Camera init failed with error 0x%x", err);
+    } else {
+      // Start streaming web server
+      // startCameraServer();
+      Serial.print("Camera Ready! Use 'http://");
+      Serial.print(WiFi.localIP());
+      Serial.println("' to connect");
+
+      if(WiFi.status() == WL_CONNECTED) {
+      unsigned long currentMillis = millis();
+      if (currentMillis - previousMillis >= timerInterval) {
+        sendPhoto();
+        previousMillis = currentMillis;
+      }
+    }
   }
+}
 
-  // For both Bluetooth and Wifi connection
-  esp_wifi_set_ps(WIFI_PS_MIN_MODEM);
-  // WiFi.setMode(WIFI_AP_STA);
-  // Wi-Fi connection
+void webServerInit() {
+  WRITE_PERI_REG(RTC_CNTL_BROWN_OUT_REG, 0); //disable brownout detector
+
   connectWifi(DEFAULT_SSID, DEFAULT_PASSWORD);
-  
-  // Start streaming web server
-  startCameraServer();
 
-  Serial.print("Camera Ready! Use 'http://");
-  Serial.print(WiFi.localIP());
-  Serial.println("' to connect");
+  // xTaskCreate(micTask, "micTask", 10000, NULL, 1, NULL);
+  xTaskCreate(camTask, "camTask", 10000, NULL, 1, NULL);
 }
 
 void connectWifi(String ssid, String password) {
-  if (WiFi.status() == WL_CONNECTED) {
-    Serial.print("Detecting new WiFi connection request! Reconnecting...");
-    WiFi.disconnect();
-  }
+  Serial.println("Detecting new WiFi connection request! Reconnecting...");
+  WiFi.disconnect();
   WiFi.begin(ssid, password);
   WiFi.softAP(ssid, password);
+  Serial.println("Connecting to:");
+  Serial.println("SSID: " + ssid);
+  Serial.println("Password: " + password);
   WiFi.setSleep(false);
 
-  int TIME_OUT = 20;
+  int TIME_OUT = 100;
   int t = 0;
 
   while (WiFi.status() != WL_CONNECTED)
   {
     if(t >= TIME_OUT) {
-      Serial.print("Connection timeout!");
+      Serial.println("Connection timeout!");
       return;
     }
     delay(500);
     Serial.print(".");
     t++;
+    if(Serial.available())
+      return;
   }
 
   Serial.println("");
   Serial.println("WiFi connected");
 }
 
-Vector<String> split(String src, char delimiter = ' ') {
-  Vector<String> out = {};
+void split(String src, String *&out, char delimiter = ' ', int max_len = 2) {
+  out = new String[max_len];
+  int id = 0;
   String current = "";
   for(char c : src) {
-    Serial.println(c);
     if(c != delimiter)
       current += c;
     else {
-      out.push_back(current);
+      if(id < max_len)
+        out[id] = current.c_str();
       current = "";
+      id++;
     }
+    if(id >= max_len)
+      return;
   }
     
-  if(current.length() > 0)
-    out.push_back(current);
-
-  
-  return out;
+  if(current.length() > 0 && id < max_len)
+    out[id] = current.c_str();
 }
 
 void webServerLoop()
@@ -307,8 +614,18 @@ void webServerLoop()
   if (Serial.available())
   {
     String wifi = Serial.readString();
-    Vector<String> wifiData = split(wifi.c_str(), '|');
-    connectWifi(wifiData[0], wifiData[1]);
+    String *wifiData = NULL;
+    wifi.trim();
+    split(wifi.c_str(), wifiData, '|');
+    if(wifiData == NULL) {
+      Serial.println("what");
+    }
+    connectWifi(wifiData[0].c_str(), wifiData[1].c_str());
+    startCameraServer();
+
+    Serial.print("Camera Ready! Use 'http://");
+    Serial.print(WiFi.localIP());
+    Serial.println("' to connect");
   }
   delay(100);
 }

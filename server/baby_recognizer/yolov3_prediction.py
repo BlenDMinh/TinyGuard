@@ -9,10 +9,12 @@ import albumentations as A
 from albumentations.pytorch import ToTensorV2
 
 model = YOLOv3(num_classes=config.CLASS_NUM).to(config.DEVICE)
-checkpoint = torch.load('checkpoint90.pth.tar', map_location=config.DEVICE)
+checkpoint = torch.load('checkpoint.pth.tar',
+                        map_location=config.DEVICE)
 model.load_state_dict(checkpoint["state_dict"])
 
-image = np.array(Image.open('./dataset/test/1.jpg').convert('RGB'))
+image = np.array(Image.open(
+    './dataset/test/634B54B68E12202DE8ACC0A1EF806B9B_video_dashinit.jpg').convert('RGB'))
 transforms = A.Compose(
     [
         A.LongestMaxSize(max_size=config.IMAGE_SIZE),
@@ -40,7 +42,7 @@ with torch.no_grad():
         for idx, (box) in enumerate(boxes_scale_i):
             bboxes[idx] += box
 nms_boxes = non_max_suppression(
-    bboxes[0], iou_threshold=0.5, threshold=0.6, box_format="midpoint",
+    bboxes[0], iou_threshold=0.5, threshold=0.8, box_format="midpoint",
 )
 print(nms_boxes)
 plot_image(image.permute(1, 2, 0).detach().cpu(), nms_boxes)
@@ -68,10 +70,10 @@ def draw_box(image, bboxs):
 frame_step = 1
 
 
-def plot_video():
+def plot_video(nums_of_baby=1):
     image_counter = 0
     read_counter = 0
-    src = cv2.VideoCapture('./dataset/test/video.mp4')
+    src = cv2.VideoCapture('./dataset/test/video2.mp4')
     while src.isOpened():
         ret, img = src.read()
         if ret and read_counter % frame_step == 0:
@@ -93,10 +95,10 @@ def plot_video():
                 for idx, (box) in enumerate(boxes_scale_i):
                     bboxes[idx] += box
             nms_boxes = non_max_suppression(
-                bboxes[0], iou_threshold=0.5, threshold=0.7, box_format="midpoint",
+                bboxes[0], iou_threshold=0.5, threshold=0.8, box_format="midpoint",
             )
             print(nms_boxes)
-            image = draw_box(trans_img, nms_boxes)
+            image = draw_box(trans_img, nms_boxes[:nums_of_baby])
             cv2.imshow('Frame', image)
             key = cv2.waitKey(1)
             if key == ord('q'):

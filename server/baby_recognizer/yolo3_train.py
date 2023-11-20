@@ -54,6 +54,33 @@ def train_fn(train_loader, model, optimizer, loss_fn, scaler, scaled_anchors):
     return mean_loss
 
 
+def calc_val_loss(val_loader, model, loss_fn, scaled_anchors):
+    loop = tqdm(val_loader, leave=True)
+    losses = []
+    for batch_idx, (x, y) in enumerate(loop):
+        x = x.to(config.DEVICE)
+        y0, y1, y2 = (
+            y[0].to(config.DEVICE),
+            y[1].to(config.DEVICE),
+            y[2].to(config.DEVICE),
+        )
+
+        with torch.cuda.amp.autocast():
+            out = model(x)
+            loss = (
+                loss_fn(out[0], y0, scaled_anchors[0])
+                + loss_fn(out[1], y1, scaled_anchors[1])
+                + loss_fn(out[2], y2, scaled_anchors[2])
+            )
+
+        losses.append(loss.item())
+
+        # update progress bar
+        mean_loss = sum(losses) / len(losses)
+        loop.set_postfix(loss=mean_loss)
+    return mean_loss
+
+
 def main():
     model = YOLOv3(num_classes=config.CLASS_NUM).to(config.DEVICE)
     optimizer = optim.Adam(
@@ -73,10 +100,10 @@ def main():
         drop_last=True,
     )
 
-    test_dataset = BabyDataset(
-        transform=config.test_transforms, data_csv=config.IMAGE_TEST_CSV)
-    test_loader = DataLoader(
-        dataset=test_dataset,
+    val_dataset = BabyDataset(
+        transform=config.test_transforms, data_csv=config.IMAGE_VAL_CSV)
+    val_loader = DataLoader(
+        dataset=val_dataset,
         batch_size=config.BATCH_SIZE,
         num_workers=config.NUM_WORKERS,
         pin_memory=config.PIN_MEMORY,
@@ -94,49 +121,48 @@ def main():
         * torch.tensor(config.STRIDE).unsqueeze(1).unsqueeze(1).repeat(1, 3, 2)
     ).to(config.DEVICE)
 
-    losses = []
+    history = []
 
     for epoch in range(config.NUM_EPOCHS):
-        # plot_couple_examples(model, test_loader, 0.6, 0.5, scaled_anchors)
+        # plot_couple_examples(model, val_loader, 0.6, 0.5, scaled_anchors)
         loss = train_fn(train_loader, model, optimizer,
                         loss_fn, scaler, scaled_anchors)
-        losses.append(loss)
+        val_loss = calc_val_loss(val_loader, model, loss_fn, scaled_anchors)
+        # losses.append([loss, val_loss])
 
         if config.SAVE_MODEL and epoch % 10 == 0:
             save_checkpoint(model, optimizer, filename=f"checkpoint.pth.tar")
 
         print(f"Currently epoch {epoch}")
-        # print("On Train Eval loader:")
-        # print("On Train loader:")
 
-        if epoch > 0 and epoch % 30 == 0:
-            check_class_accuracy(model, train_loader,
-                                 threshold=config.CONF_THRESHOLD)
-            check_class_accuracy(model, test_loader,
-                                 threshold=config.CONF_THRESHOLD)
-            pred_boxes, true_boxes = get_evaluation_bboxes(
-                test_loader,
-                model,
-                iou_threshold=config.NMS_IOU_THRESH,
-                anchors=config.ANCHORS,
-                threshold=config.CONF_THRESHOLD,
-            )
-            mapval = mean_average_precision(
-                pred_boxes,
-                true_boxes,
-                iou_threshold=config.MAP_IOU_THRESH,
-                box_format="midpoint",
-                num_classes=config.CLASS_NUM,
-            )
-            print(f"mAP: {mapval.item()}")
-            model.train()
+        train_acc = check_class_accuracy(model, train_loader,
+                                         threshold=config.CONF_THRESHOLD)
+        test_acc = check_class_accuracy(model, val_loader,
+                                        threshold=config.CONF_THRESHOLD)
+        pred_boxes, true_boxes = get_evaluation_bboxes(
+            val_loader,
+            model,
+            iou_threshold=config.NMS_IOU_THRESH,
+            anchors=config.ANCHORS,
+            threshold=config.CONF_THRESHOLD,
+        )
+        mapval = mean_average_precision(
+            pred_boxes,
+            true_boxes,
+            iou_threshold=config.MAP_IOU_THRESH,
+            box_format="midpoint",
+            num_classes=config.CLASS_NUM,
+        )
+        print(f"mAP: {mapval.item()}")
+        model.train()
+        history.append([loss, val_loss, *train_acc, *test_acc, mapval])
     save_checkpoint(model, optimizer, filename=f"checkpoint.pth.tar")
     check_class_accuracy(model, train_loader,
                          threshold=config.CONF_THRESHOLD)
-    check_class_accuracy(model, test_loader,
+    check_class_accuracy(model, val_loader,
                          threshold=config.CONF_THRESHOLD)
     pred_boxes, true_boxes = get_evaluation_bboxes(
-        test_loader,
+        val_loader,
         model,
         iou_threshold=config.NMS_IOU_THRESH,
         anchors=config.ANCHORS,
@@ -150,8 +176,8 @@ def main():
         num_classes=config.CLASS_NUM,
     )
 
-    with open('losses.txt', 'w') as f:
-        f.write(str(losses))
+    with open('history2.txt', 'w') as f:
+        f.write(str(history))
 
 
 if __name__ == "__main__":
