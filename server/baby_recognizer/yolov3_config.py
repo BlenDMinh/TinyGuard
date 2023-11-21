@@ -7,20 +7,21 @@ DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 
 IMAGE_SIZE = 416
 IMAGE_DATA_CSV = "./image_data.csv"
+IMAGE_VAL_CSV = "./image_val.csv"
 IMAGE_TEST_CSV = "./image_test.csv"
 IMAGE_DATA_PATH = "./dataset/src1/"
 CLASS_NUM = 2
 STRIDE = [IMAGE_SIZE // 32, IMAGE_SIZE // 16, IMAGE_SIZE // 8]
 
 # Train config
-NUM_EPOCHS = 150
+NUM_EPOCHS = 50
 PIN_MEMORY = True
 LOAD_MODEL = True
 SAVE_MODEL = True
 CHECKPOINT_FILE = "checkpoint.pth.tar"
 NUM_WORKERS = 4
-BATCH_SIZE = 32
-LEARNING_RATE = 3e-5
+BATCH_SIZE = 16
+LEARNING_RATE = 1e-4
 WEIGHT_DECAY = 1e-4
 CONF_THRESHOLD = 0.7
 MAP_IOU_THRESH = 0.5

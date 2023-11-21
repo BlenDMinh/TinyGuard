@@ -174,17 +174,10 @@ extension APIClientRefreshToken on APIClient {
   Future<void> handleRefreshToken() async {
     LogUtils.methodIn(message: 'refreshToken');
     try {
-      final response = await post(
-        url: '${FlavorConfig.instance.baseURL}${ApiConstants.refreshToken}',
-        data: {
-          'RefreshToken': sPref.refreshToken!,
-          'AccessToken': sPref.accessToken!,
-        },
+      final response = await get(
+        url: '${FlavorConfig.instance.baseURL}/user/refresh-access?refresh-token=${ApiConstants.refreshToken}',
       );
       final authEntity = AuthEntity.fromJson(response as Map<String, dynamic>);
-      await sPref.setRefreshToken(
-        value: authEntity.result?.refreshToken ?? Constants.kEmptyString,
-      );
       await sPref.setAccessToken(
         value: authEntity.result?.accessToken ?? Constants.kEmptyString,
       );
