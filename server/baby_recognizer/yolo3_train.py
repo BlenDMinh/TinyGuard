@@ -1,12 +1,12 @@
-from yolov3_dataset import BabyDataset
+from .yolov3_dataset import BabyDataset
 from torch.utils.data import DataLoader
-import yolov3_config as config
+from . import yolov3_config as config
 import torch
 import torch.optim as optim
 
-from yolov3_model import YOLOv3
+from .yolov3_model import YOLOv3
 from tqdm import tqdm
-from yolo3_utils import (
+from .yolo3_utils import (
     mean_average_precision,
     cells_to_bboxes,
     get_evaluation_bboxes,
@@ -16,7 +16,7 @@ from yolo3_utils import (
     get_loaders,
     plot_couple_examples
 )
-from yolov3_loss import YoloLoss
+from .yolov3_loss import YoloLoss
 import warnings
 warnings.filterwarnings("ignore")
 

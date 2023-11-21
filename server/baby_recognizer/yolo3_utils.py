@@ -1,4 +1,5 @@
-import yolov3_config as config
+from . import yolov3_config as config
+# import yolov3_config as config
 import matplotlib.pyplot as plt
 import matplotlib.patches as patches
 import numpy as np
@@ -271,7 +272,7 @@ def plot_image(image, boxes):
             upper_left_x * width,
             upper_left_y * height,
             # s=class_labels[int(class_pred)],
-            s='Cry' if class_pred < 1 else 'No Crying',
+            s='Cry' if class_pred == 0 else 'No Crying',
             color="white",
             verticalalignment="top",
             bbox={"color": "red", "pad": 0},

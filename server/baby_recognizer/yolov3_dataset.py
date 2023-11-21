@@ -6,8 +6,12 @@ import numpy as np
 import torch
 from PIL import Image
 from torch.utils.data import Dataset
+# from . import yolov3_config as config
 import yolov3_config as config
 import albumentations as A
+# from .yolo3_utils import (
+#     iou_width_height as iou
+# )
 from yolo3_utils import (
     iou_width_height as iou
 )
@@ -94,13 +98,14 @@ def analyze(data):
         obj += 1
         with open(label_path) as f:
             for line in f:
-                data = line.split()
-                if data[0] == '0':
+                adata = line.split()
+                if adata[0] == '0':
                     cry += 1
-                elif data[0] == '1':
+                elif adata[0] == '1':
                     nocry += 1
     osum = noobj + obj
     csum = nocry + cry
+    print(f'Total: {len(data)}')
     print(f'No object: {noobj * 100 / osum}%')
     print(f'Object: {obj * 100 / osum}%')
     print(f'\t- Cry: {cry * 100 / csum}%')
