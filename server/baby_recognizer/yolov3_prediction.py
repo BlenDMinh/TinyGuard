@@ -1,20 +1,25 @@
 import cv2
 import numpy as np
-from yolo3_utils import cells_to_bboxes, non_max_suppression, plot_image
-from yolov3_model import YOLOv3
-import yolov3_config as config
+from .yolo3_utils import cells_to_bboxes, non_max_suppression, plot_image
+from .yolov3_model import YOLOv3
+from . import yolov3_config as config
+# import yolov3_config as config
+# from yolov3_model import YOLOv3
+# from yolo3_utils import cells_to_bboxes, non_max_suppression, plot_image
 import torch
 from PIL import Image
 import albumentations as A
 from albumentations.pytorch import ToTensorV2
 
 model = YOLOv3(num_classes=config.CLASS_NUM).to(config.DEVICE)
-checkpoint = torch.load('checkpoint.pth.tar',
+checkpoint = torch.load('./baby_recognizer/model/checkpoint.pth.tar',
                         map_location=config.DEVICE)
+# checkpoint = torch.load('./model/checkpoint.pth.tar',
+                        # map_location=config.DEVICE)
 model.load_state_dict(checkpoint["state_dict"])
 
-image = np.array(Image.open(
-    './dataset/test/634B54B68E12202DE8ACC0A1EF806B9B_video_dashinit.jpg').convert('RGB'))
+# image = np.array(Image.open(
+#     './dataset/src/image23.jpg').convert('RGB'))
 transforms = A.Compose(
     [
         A.LongestMaxSize(max_size=config.IMAGE_SIZE),
@@ -25,27 +30,27 @@ transforms = A.Compose(
         ToTensorV2(),
     ],
 )
-image = transforms(image=image)['image']
-anchors = (
-    torch.tensor(config.ANCHORS)
-    * torch.tensor(config.STRIDE).unsqueeze(1).unsqueeze(1).repeat(1, 3, 2)
-).to(config.DEVICE)
-with torch.no_grad():
-    out = model(image.unsqueeze(0).to(config.DEVICE))
-    bboxes = [[] for _ in range(image.shape[0])]
-    for i in range(3):
-        batch_size, A, S, _, _ = out[i].shape
-        anchor = anchors[i]
-        boxes_scale_i = cells_to_bboxes(
-            out[i], anchor, S=S, is_preds=True
-        )
-        for idx, (box) in enumerate(boxes_scale_i):
-            bboxes[idx] += box
-nms_boxes = non_max_suppression(
-    bboxes[0], iou_threshold=0.5, threshold=0.8, box_format="midpoint",
-)
-print(nms_boxes)
-plot_image(image.permute(1, 2, 0).detach().cpu(), nms_boxes)
+# image = transforms(image=image)['image']
+# anchors = (
+#     torch.tensor(config.ANCHORS)
+#     * torch.tensor(config.STRIDE).unsqueeze(1).unsqueeze(1).repeat(1, 3, 2)
+# ).to(config.DEVICE)
+# with torch.no_grad():
+#     out = model(image.unsqueeze(0).to(config.DEVICE))
+#     bboxes = [[] for _ in range(image.shape[0])]
+#     for i in range(3):
+#         batch_size, A, S, _, _ = out[i].shape
+#         anchor = anchors[i]
+#         boxes_scale_i = cells_to_bboxes(
+#             out[i], anchor, S=S, is_preds=True
+#         )
+#         for idx, (box) in enumerate(boxes_scale_i):
+#             bboxes[idx] += box
+# nms_boxes = non_max_suppression(
+#     bboxes[0], iou_threshold=0.5, threshold=0.8, box_format="midpoint",
+# )
+# print(nms_boxes)
+# plot_image(image.permute(1, 2, 0).detach().cpu(), nms_boxes)
 
 
 def draw_box(image, bboxs):
@@ -110,21 +115,11 @@ def plot_video(nums_of_baby=1):
     src.release()
 
 
-plot_video()
+# plot_video()
 
 
 def predict(image):
     image = np.array(image.convert('RGB'))
-    transforms = A.Compose(
-        [
-            A.LongestMaxSize(max_size=config.IMAGE_SIZE),
-            A.PadIfNeeded(
-                min_height=config.IMAGE_SIZE, min_width=config.IMAGE_SIZE, border_mode=cv2.BORDER_CONSTANT
-            ),
-            A.Normalize(mean=[0, 0, 0], std=[1, 1, 1], max_pixel_value=255,),
-            ToTensorV2(),
-        ],
-    )
     image = transforms(image=image)['image']
     anchors = (
         torch.tensor(config.ANCHORS)

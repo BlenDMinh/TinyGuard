@@ -1,7 +1,8 @@
 import torchaudio
 import torch
 import json
-from server.audio_process.audio_utils import DELTA_TIME, SAMPLE_RATE
+from audio_process.audio_utils import DELTA_TIME, SAMPLE_RATE
+from entity.device import Device
 
 
 class BoundingBox:
@@ -22,16 +23,20 @@ class BoundingBox:
 
 
 class ImagePredict:
-    def __init__(self, bboxes: list[BoundingBox]) -> None:
+    def __init__(self, bboxes: list[BoundingBox], device: Device=None) -> None:
         self.bboxes = bboxes
+        self.device= device
         is_crying = False
         for bbox in bboxes:
             is_crying = is_crying or bbox.label == 0
         self.is_crying = is_crying
 
     def to_json(self, to_string: bool = False) -> dict[str, any] | str:
-        json_obj = dict(bboxes=list(map(lambda e: e.to_json(),
-                        self.bboxes)), is_crying=self.is_crying)
+        json_obj = dict(
+            device=self.device.to_json() if self.device else Device(code="test").to_json(),
+            bboxes=list(map(lambda e: e.to_json(),
+                        self.bboxes)), 
+            is_crying=self.is_crying)
         if to_string:
             return json.dumps(json_obj)
         return json_obj

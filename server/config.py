@@ -28,7 +28,14 @@ socketio = SocketIO(app, engineio_logger=True, logger=True, broadcast=True)
 def connect():
     send("Connected")
 
+@socketio.on('connect', namespace='/test_i')
+def test_i_namespace_connect():
+    pass
 
-@socketio.on("a", namespace='/api/device/image_prediction')
-def image_prediction(prediction):
-    print("Predict")
+@socketio.on('connect', namespace='/test_a')
+def test_a_namespace_connect():
+    pass
+
+# @socketio.on("a", namespace='/api/device/image_prediction')
+# def image_prediction(prediction):
+#     print("Predict")
