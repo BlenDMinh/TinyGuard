@@ -1,17 +1,32 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:get_it/get_it.dart';
 import 'package:tinyguard/ui/shared/already_have_an_account_acheck.dart';
 import 'package:tinyguard/ui/shared/background.dart';
 import 'package:tinyguard/ui/views/base/base_view.dart';
 import 'package:tinyguard/ui/views/base/responsive.dart';
+import 'package:tinyguard/view_models/register_view_model.dart';
 import 'components/sign_up_top_image.dart';
 
-class RegisterView extends StatelessWidget {
+class RegisterView extends StatefulWidget {
   const RegisterView({Key? key}) : super(key: key);
+
+  @override
+  State<RegisterView> createState() => _RegisterViewState();
+}
+
+class _RegisterViewState extends State<RegisterView> {
+  late RegisterViewModel viewModel;
+  @override
+  void initState() {
+    viewModel = GetIt.instance.get<RegisterViewModel>();
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
     return BaseView(
+      viewModel: viewModel,
       resizeToAvoidBottomInset: true,
       mobileBuilder: (context) => Background(
         child: SingleChildScrollView(
@@ -33,6 +48,7 @@ class RegisterView extends StatelessWidget {
                               textInputAction: TextInputAction.next,
                               cursorColor: Colors.black,
                               onSaved: (email) {},
+                              controller: viewModel.emailController,
                               decoration: InputDecoration(
                                 hintText: "Your email",
                                 prefixIcon: Padding(
@@ -47,6 +63,7 @@ class RegisterView extends StatelessWidget {
                                 textInputAction: TextInputAction.done,
                                 obscureText: true,
                                 cursorColor: Colors.black,
+                                controller: viewModel.phoneController,
                                 decoration: InputDecoration(
                                   hintText: "Your phone number",
                                   prefixIcon: Padding(
@@ -62,6 +79,7 @@ class RegisterView extends StatelessWidget {
                                 textInputAction: TextInputAction.done,
                                 obscureText: true,
                                 cursorColor: Colors.black,
+                                controller: viewModel.passwordController,
                                 decoration: InputDecoration(
                                   hintText: "Your password",
                                   prefixIcon: Padding(
@@ -79,7 +97,11 @@ class RegisterView extends StatelessWidget {
                                     backgroundColor:
                                         MaterialStateProperty.all<Color>(
                                             Colors.deepPurpleAccent)),
-                                onPressed: () {},
+                                onPressed: () {
+                                  viewModel.onRegister(onSuccess: () {
+                                    debugPrint('REGISTER SUCCESSFULLY');
+                                  });
+                                },
                                 child: Text(
                                   "Sign up".toUpperCase(),
                                 ),

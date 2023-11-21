@@ -128,10 +128,12 @@ class APIClient {
   }
 
   void onError(DioException err) {
-    debugPrint('ON ERROR: ' +
-        err.response!.data.toString() +
-        ' STATUS CODE: ' +
-        err.response!.statusCode.toString());
+    (err.response == null)
+        ? 'RESPONSE NULL !!!!'
+        : debugPrint('ON ERROR: ' +
+            err.response!.data.toString() +
+            ' STATUS CODE: ' +
+            err.response!.statusCode.toString());
     if (err.response != null) {
       switch (err.response?.statusCode) {
         case HttpStatus.badRequest:

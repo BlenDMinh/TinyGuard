@@ -80,10 +80,26 @@ class _LoginScreenState extends State<LoginScreen> {
                                         MaterialStateProperty.all<Color>(
                                             Colors.deepPurpleAccent)),
                                 onPressed: () async {
-                                  await viewModel.onLoginPressed(onSuccess: () {
-                                    debugPrint('Login success');
-                                    Get.toNamed(Routes.firstSetup);
-                                  });
+                                  showDialog(
+                                    context: context,
+                                    barrierDismissible: false,
+                                    builder: (BuildContext context) {
+                                      return Center(
+                                        child: CircularProgressIndicator(),
+                                      );
+                                    },
+                                  );
+                                  await viewModel.onLoginPressed(
+                                    onSuccess: () {
+                                      debugPrint('Login success');
+
+                                      Navigator.pop(context);
+                                      Get.toNamed(Routes.firstSetup);
+                                    },
+                                    onFailure: () {
+                                      Navigator.pop(context);
+                                    },
+                                  );
                                 },
                                 child: Text(
                                   "Login".toUpperCase(),
