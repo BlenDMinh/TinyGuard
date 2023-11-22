@@ -11,14 +11,24 @@ def login():
     try:
         if "Authorization" in request.headers:
             token = request.headers["Authorization"]
+            print(token)
             login_request = LoginRequestDto.from_access_token(token)
         else:
             data = request.json
             login_request = LoginRequestDto.from_json(data)
         response = AuthService.login(login_request)
+        print(response.to_json())
+        if response.is_error:
+            return Response(
+                response=json.dumps(response.to_json()),
+                status=HTTPStatus.UNAUTHORIZED,
+                headers={
+                    "Content-Type": "application/json"
+                }
+            )
         return Response(
             response=json.dumps(response.to_json()),
-            status=HTTPStatus.BAD_REQUEST if response.is_error else HTTPStatus.OK,
+            status=HTTPStatus.UNAUTHORIZED if response.error == "Unauthorized" else HTTPStatus.BAD_REQUEST if response.is_error else HTTPStatus.OK,
             headers={
                 "Content-Type": "application/json"
             }

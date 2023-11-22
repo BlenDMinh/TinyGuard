@@ -2,7 +2,7 @@ import 'package:tinyguard/data/datasource/remote/entity/bounding_box_entity.dart
 
 class ImagePredict {
   final List<BoundingBoxEntity> bboxes;
-  final int is_crying;
+  final bool is_crying;
 
   ImagePredict({
     required this.bboxes,

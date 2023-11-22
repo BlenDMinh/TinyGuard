@@ -8,7 +8,7 @@ import 'package:tinyguard/view_models/register_view_model.dart';
 
 GetIt getIt = GetIt.instance;
 
-void setupLocator() async {
+Future<void> setupLocator() async {
   await SPrefAuthModel().onInit();
   getIt.registerSingleton<AuthAPIService>(
       AuthAPIService(client: APIClient(sPref: SPrefAuthModel())));

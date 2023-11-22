@@ -57,12 +57,13 @@ class AuthService:
         token = login_request.access_token
         session: Session = Session.query.filter_by(access_token=token).first()
         if not session or session.is_refresh_expired:
-            db.session.delete(session)
-            db.session.commit()
-            return WrapResponseDto.error("Bad request", "Session has expired")
+            if session:
+                db.session.delete(session)
+                db.session.commit()
+            return WrapResponseDto.error("Unauthorized", "Session has expired")
 
         if session.is_access_expired:
-            return WrapResponseDto.error("Bad request", "Access token has expired. Please request a new one")
+            return WrapResponseDto.error("Unauthorized", "Access token has expired. Please request a new one")
 
         return WrapResponseDto.success({
             "access_token": session.access_token,
@@ -132,14 +133,20 @@ class AuthService:
                 "Bad request",
                 "Session has expired"
             )
+        # if session.is_access_expired:
         access_token = generate_hash({
             "user_id": session.user.id,
             "time": datetime.now().timestamp()
         })
         session.access_token = access_token
+        session.a_create_time = datetime.now()
         db.session.commit()
+    
+        session: Session = Session.query.filter_by(
+            access_token=access_token).first()
+        
         return WrapResponseDto.success({
-            "access_token": access_token
+            "access_token": session.access_token
         },
             "Successfully create new access token"
         )

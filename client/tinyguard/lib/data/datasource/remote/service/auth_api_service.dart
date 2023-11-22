@@ -24,13 +24,13 @@ class AuthAPIService {
 
   AuthAPIService({required this.client});
 
-  Future<AuthEntity> login(UserCredentials credentials) async {
+  Future<AuthEntity> login({UserCredentials? credentials = null}) async {
     String path = AuthRoute.login.path;
     debugPrint('credentials');
-    debugPrint(credentials.toJson().toString());
+    debugPrint(credentials?.toJson().toString());
     final response = await client.post(
         url: path,
-        data: jsonEncode(credentials.toJson()),
+        data: credentials != null ? jsonEncode(credentials.toJson()) : "{}",
         requestOptions: Options()
           ..headers = {"Content-Type": "application/json"});
     return AuthEntity.fromJson(response as Map<String, dynamic>);

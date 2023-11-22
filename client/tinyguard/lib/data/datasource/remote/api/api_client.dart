@@ -15,26 +15,26 @@ class APIClient {
   final SPrefAuthModel sPref;
 
   APIClient({required this.sPref}) {
-    final String? accessToken = sPref.accessToken;
     dio.interceptors.add(
       InterceptorsWrapper(
         onRequest: (request, handler) {
+          final String? accessToken = sPref.accessToken;
           if (accessToken != null && accessToken.isNotEmpty) {
             request.headers['Authorization'] = '$accessToken';
           }
           return handler.next(request);
         },
         onError: (error, handler) async {
-          if (error.response?.statusCode == HttpStatus.unauthorized &&
-              !error.requestOptions.path.contains('/login')) {
+          if (error.response?.statusCode == HttpStatus.unauthorized) {
             try {
               await handleRefreshToken();
               return handler.resolve(await _retry(error.requestOptions));
-            } catch (e) {
-              return handler.next(error);
+            } on DioException catch (e) {
+              LogUtils.e(e.response?.data.toString() ?? "Unknown error");
+              return handler.reject(error);
             }
           }
-          return handler.next(error);
+          return handler.reject(error);
         },
       ),
     );
@@ -50,10 +50,10 @@ class APIClient {
       String uri = '${FlavorConfig.instance.baseURL}$url';
       LogUtils.methodIn(message: uri);
       final response = await dio.get(uri, options: options);
-      LogUtils.methodIn(message: uri);
-      LogUtils.methodOut(message: '$response');
+      LogUtils.methodOut(message: '${response.data}');
       return response.data;
-    } on DioException catch (dioError) {
+    } 
+    on DioException catch (dioError) {
       onError(dioError);
     }
   }
@@ -64,7 +64,7 @@ class APIClient {
     Options? requestOptions,
   }) async {
     final String? accessToken = sPref.accessToken;
-    try {
+    // try {
       Options options = Options();
       if (requestOptions != null) {
         options = requestOptions;
@@ -77,9 +77,9 @@ class APIClient {
       debugPrint(options.headers.toString());
       final response = await dio.post(uri, data: data, options: options);
       return response.data;
-    } on DioException catch (dioError) {
-      onError(dioError);
-    }
+    // } on DioException catch (dioError) {
+    //   onError(dioError);
+    // }
   }
 
   Future<dynamic> put({
@@ -175,12 +175,13 @@ extension APIClientRefreshToken on APIClient {
     LogUtils.methodIn(message: 'refreshToken');
     try {
       final response = await get(
-        url: '${FlavorConfig.instance.baseURL}/user/refresh-access?refresh-token=${ApiConstants.refreshToken}',
+        url: 'user/refresh-access?refresh-token=${sPref.refreshToken}',
       );
       final authEntity = AuthEntity.fromJson(response as Map<String, dynamic>);
       await sPref.setAccessToken(
         value: authEntity.result?.accessToken ?? Constants.kEmptyString,
       );
+      LogUtils.d("Set new access token: ${sPref.accessToken}");
     } catch (e) {
       LogUtils.e(e.toString());
       throw UnauthorizedException();
@@ -188,8 +189,14 @@ extension APIClientRefreshToken on APIClient {
   }
 
   Future<Response<dynamic>> _retry(RequestOptions requestOptions) async {
-    final options = Options(method: requestOptions.method);
-    options.headers = {'Authorization': '${sPref.accessToken!}'};
+    final options = Options(method: requestOptions.method, headers: requestOptions.headers);
+    options.headers?['Authorization'] = '${sPref.accessToken!}';
+    LogUtils.d(requestOptions.data.toString());
+    LogUtils.d("Retrying ${options.method} ${requestOptions.path}");
+    if(options.headers != null) {
+      LogUtils.d("Headers: ${options.headers.toString()}");
+    }
+
     return dio.request<dynamic>(
       requestOptions.path,
       data: requestOptions.data,

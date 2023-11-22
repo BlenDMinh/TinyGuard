@@ -47,14 +47,16 @@ class BaseView<VM extends BaseViewModel?> extends StatelessWidget {
       child: Scaffold(
         resizeToAvoidBottomInset: resizeToAvoidBottomInset,
         appBar: appBar,
-        body: OrientationBuilder(
-          builder: (ctx, __) {
-            return Responsive(
-              mobile: mobileBuilder.call(ctx),
-              tablet: tabletBuilder?.call(ctx),
-            );
-          },
-        ),
+        body: 
+        // OrientationBuilder(
+        //   builder: (ctx, __) {
+        //     return 
+            Responsive(
+              mobile: mobileBuilder.call(context),
+              tablet: tabletBuilder?.call(context),
+            ),
+        //   },
+        // ),
         bottomNavigationBar: bottomNavigationBuilder?.call(context),
         backgroundColor: backgroundColor,
       ),

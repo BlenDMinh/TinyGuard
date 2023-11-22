@@ -11,7 +11,7 @@ class BoundingBox:
         self.y = y
         self.w = w
         self.h = h
-        self.label = label
+        self.label = int(label)
         self.confidence = confidence
 
     def to_json(self, to_string: bool = False) -> dict[str, any] | str:

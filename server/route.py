@@ -1,7 +1,7 @@
 from view.user_api import testuser
 from view.index import index
 from view.device_api import audio_input, image_input
-from view.auth_api import login, register
+from view.auth_api import login, register, request_access_token
 
 route = {
     "/": {
@@ -18,6 +18,11 @@ route = {
         "endpoint": "api user login",
         "view": login,
         "methods": ["POST"]
+    },
+    "/api/user/refresh-access": {
+        "endpoint": "api user refresh token",
+        "view": request_access_token,
+        "methods": ["GET"]
     },
     "/api/user/device": {
         "endpoint": "api user add device",

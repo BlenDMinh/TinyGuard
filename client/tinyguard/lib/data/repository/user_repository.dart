@@ -3,10 +3,28 @@ import 'package:tinyguard/data/datasource/remote/dto/user_register_credentials.d
 import 'package:tinyguard/data/datasource/remote/entity/user_entity.dart';
 import 'package:tinyguard/data/datasource/remote/service/auth_api_service.dart';
 import 'package:tinyguard/data/datasource/remote/entity/auth_entity.dart';
+import 'package:tinyguard/data/repository/device_repository.dart';
 
 abstract class UserRepository {
-  Future<AuthEntity> login(UserCredentials credentials);
+  Future<AuthEntity> login({UserCredentials? credentials = null});
   Future<UserEntity> register(UserRegisterCredentials credentials);
+}
+
+class User {
+  int id;
+  String username;
+  int? age;
+  String phone_number;
+  String email;
+  String? role;
+  List<Device> devices = [];
+
+  User(this.id, this.username, this.age, this.phone_number, this.email, this.role, this.devices);
+
+  factory User.fromEntity(UserEntity entity) {
+    List<Device> devices = entity.devices.map((e) => Device.fromEntity(e)).toList();
+    return User(entity.id!, entity.username!, entity.age, entity.phone_number!, entity.email!, entity.role, devices);
+  }
 }
 
 class UserRepositoryImpl extends UserRepository {
@@ -16,13 +34,19 @@ class UserRepositoryImpl extends UserRepository {
     required this.authAPIService,
   });
 
+  User? user;
+
   @override
-  Future<AuthEntity> login(UserCredentials credentials) {
-    return authAPIService.login(credentials);
+  Future<AuthEntity> login({UserCredentials? credentials = null}) async {
+    return authAPIService.login(credentials: credentials).then((authEntity) {
+      if(authEntity.result?.user != null)
+        this.user = User.fromEntity(authEntity.result!.user!);
+      return authEntity;
+    });
   }
 
   @override
-  Future<UserEntity> register(UserRegisterCredentials credentials) {
+  Future<UserEntity> register(UserRegisterCredentials credentials) async {
     return authAPIService.register(credentials);
   }
 }

@@ -1,6 +1,10 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
+import 'package:tinyguard/data/datasource/remote/api/api_exception.dart';
+import 'package:tinyguard/data/repository/device_repository.dart';
 import 'package:tinyguard/data/repository/user_repository.dart';
 import 'package:tinyguard/data/shared_preferences/spref_auth_model.dart';
 import 'package:tinyguard/enums.dart';
@@ -20,12 +24,18 @@ void main() async {
     SystemUiOverlay.bottom,
     SystemUiOverlay.top,
   ]);
-  setupLocator();
+  await setupLocator();
   FlavorConfig(
-      baseApiUrl: "http://192.168.5.200:5000",
+      baseApiUrl: "http://192.168.1.184:5000",
       flavor: Flavor.development,
       versionAPI: '/api/');
-  runApp(const MainApp());
+  try {
+    await getIt.get<UserRepository>().login();
+    runApp(const MainApp(initRoute: Routes.firstSetup));
+  } on ApiException catch(e) {
+    debugPrint(e.toString());
+    runApp(const MainApp());
+  }
 }
 
 class Routes {
@@ -56,13 +66,14 @@ class Routes {
 }
 
 class MainApp extends StatelessWidget {
-  const MainApp({super.key});
+  final String initRoute;
+  const MainApp({super.key, this.initRoute = Routes.splash1});
 
   @override
   Widget build(BuildContext context) {
     return GetMaterialApp(
       debugShowCheckedModeBanner: false,
-      initialRoute: Routes.splash1,
+      initialRoute: initRoute,
       routes: Routes.routes,
     );
   }
