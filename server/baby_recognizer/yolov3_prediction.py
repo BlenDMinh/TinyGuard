@@ -117,17 +117,31 @@ def plot_video(nums_of_baby=1):
 
 # plot_video()
 
+def reverse_transform(image, box):
+    h = image.shape[0]
+    w = image.shape[1]
+    h_dif = max([h, w]) - h
+    w_dif = max([h, w]) - w
+    h_pad = (h_dif / 2) / max([h, w])
+    w_pad = (w_dif / 2) / max([h, w])
+    
+    box[2] = (box[2] - w_pad) / (1 - 2 * w_pad)
+    box[3] = (box[3] - h_pad) / (1 - 2 * h_pad)
+    box[4] = box[4] / (1 - 2 * w_pad)
+    box[5] = box[5] / (1 - 2 * h_pad)
+    
+    return box
 
-def predict(image):
+def predict(image, reverse_transform=True):
     image = np.array(image.convert('RGB'))
-    image = transforms(image=image)['image']
+    t_image = transforms(image=image)['image']
     anchors = (
         torch.tensor(config.ANCHORS)
         * torch.tensor(config.STRIDE).unsqueeze(1).unsqueeze(1).repeat(1, 3, 2)
     ).to(config.DEVICE)
     with torch.no_grad():
-        out = model(image.unsqueeze(0).to(config.DEVICE))
-        bboxes = [[] for _ in range(image.shape[0])]
+        out = model(t_image.unsqueeze(0).to(config.DEVICE))
+        bboxes = [[] for _ in range(t_image.shape[0])]
         for i in range(3):
             batch_size, A, S, _, _ = out[i].shape
             anchor = anchors[i]
@@ -139,4 +153,6 @@ def predict(image):
     nms_boxes = non_max_suppression(
         bboxes[0], iou_threshold=0.5, threshold=0.6, box_format="midpoint",
     )
+    if reverse_transform:
+        nms_boxes = map(lambda box: reverse_transform(image, box), nms_boxes)
     return nms_boxes

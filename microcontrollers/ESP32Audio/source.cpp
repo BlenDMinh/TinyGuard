@@ -10,7 +10,7 @@ WiFiClient client;
 #include <driver/i2s.h>
 #define I2S_WS 13
 #define I2S_SD 15
-#define I2S_SCK 14
+#define I2S_SCK 12
 #define I2S_PORT I2S_NUM_0
 #define I2S_SAMPLE_RATE (16000)
 #define I2S_SAMPLE_BITS (16)
@@ -22,40 +22,41 @@ const int headerSize = 44;
 
 void i2sInit()
 {
-    i2s_config_t i2s_config = {
-        .mode = (i2s_mode_t)(I2S_MODE_MASTER | I2S_MODE_RX),
-        .sample_rate = I2S_SAMPLE_RATE,
-        .bits_per_sample = i2s_bits_per_sample_t(I2S_SAMPLE_BITS),
-        .channel_format = I2S_CHANNEL_FMT_ONLY_LEFT,
-        .communication_format = i2s_comm_format_t(I2S_COMM_FORMAT_I2S | I2S_COMM_FORMAT_I2S_MSB),
-        .intr_alloc_flags = 0,
-        .dma_buf_count = 16,
-        .dma_buf_len = 512,
-        .use_apll = 1};
+  i2s_config_t i2s_config = {
+      .mode = (i2s_mode_t)(I2S_MODE_MASTER | I2S_MODE_RX),
+      .sample_rate = I2S_SAMPLE_RATE,
+      .bits_per_sample = i2s_bits_per_sample_t(I2S_SAMPLE_BITS),
+      .channel_format = I2S_CHANNEL_FMT_ONLY_LEFT,
+      .communication_format = i2s_comm_format_t(I2S_COMM_FORMAT_I2S | I2S_COMM_FORMAT_I2S_MSB),
+      .intr_alloc_flags = 0,
+      .dma_buf_count = 16,
+      .dma_buf_len = 512,
+      .use_apll = 1};
 
-    i2s_driver_install(I2S_PORT, &i2s_config, 0, NULL);
+  i2s_driver_install(I2S_PORT, &i2s_config, 0, NULL);
 
-    const i2s_pin_config_t pin_config = {
-        .bck_io_num = I2S_SCK,
-        .ws_io_num = I2S_WS,
-        .data_out_num = -1,
-        .data_in_num = I2S_SD};
+  const i2s_pin_config_t pin_config = {
+      .bck_io_num = I2S_SCK,
+      .ws_io_num = I2S_WS,
+      .data_out_num = -1,
+      .data_in_num = I2S_SD};
 
-    i2s_set_pin(I2S_PORT, &pin_config);
+  i2s_set_pin(I2S_PORT, &pin_config);
 }
 void connectWiFi()
 {
-    WiFi.begin(ssid, password);
+  WiFi.begin(ssid, password);
 
-    while (WiFi.status() != WL_CONNECTED)
-    {
-        delay(500);
-        Serial.print(".");
-    }
-    Serial.println("");
-    Serial.println("WiFi connected");
+  while (WiFi.status() != WL_CONNECTED)
+  {
+    delay(500);
+    Serial.print(".");
+  }
+  Serial.println("");
+  Serial.println("WiFi connected");
 }
-void wavHeader(byte* header, int wavSize){
+void wavHeader(byte *header, int wavSize)
+{
   header[0] = 'R';
   header[1] = 'I';
   header[2] = 'F';
@@ -103,14 +104,16 @@ void wavHeader(byte* header, int wavSize){
   header[43] = (byte)((wavSize >> 24) & 0xFF);
 }
 
-String sendAudio() {
+String sendAudio()
+{
   String getAll;
   String getBody;
 
   Serial.println("Connecting to server: " + serverName);
 
-  if (client.connect(serverName.c_str(), serverPort)) {
-    Serial.println("Connection successful!");    
+  if (client.connect(serverName.c_str(), serverPort))
+  {
+    Serial.println("Connection successful!");
     String head = "--RandomNerdTutorials\r\nContent-Disposition: form-data; name=\"audioFile\"; filename=\"esp32-audio.wav\"\r\nContent-Type: */*\r\n\r\n";
     String tail = "\r\n--RandomNerdTutorials--\r\n";
 
@@ -125,33 +128,29 @@ String sendAudio() {
     byte header[headerSize];
     wavHeader(header, FLASH_RECORD_SIZE);
 
-    // uint32_t imageLen = fb->len;
-    // uint32_t totalLen = imageLen + extraLen;
-
-    client.write((char*) header, headerSize);
+    client.write((char *)header, headerSize);
 
     int i2s_read_len = I2S_READ_LEN;
     int flash_wr_size = 0;
     size_t bytes_read;
 
-    char* i2s_read_buff = (char*) calloc(i2s_read_len, sizeof(char));
-    uint8_t* flash_write_buff = (uint8_t*) calloc(i2s_read_len, sizeof(char));
+    char *i2s_read_buff = (char *)calloc(i2s_read_len, sizeof(char));
+    uint8_t *flash_write_buff = (uint8_t *)calloc(i2s_read_len, sizeof(char));
 
-    i2s_read(I2S_PORT, (void*) i2s_read_buff, i2s_read_len, &bytes_read, portMAX_DELAY);
-    i2s_read(I2S_PORT, (void*) i2s_read_buff, i2s_read_len, &bytes_read, portMAX_DELAY);
-    
+    i2s_read(I2S_PORT, (void *)i2s_read_buff, i2s_read_len, &bytes_read, portMAX_DELAY);
+    i2s_read(I2S_PORT, (void *)i2s_read_buff, i2s_read_len, &bytes_read, portMAX_DELAY);
+
     Serial.println(" *** Recording Start *** ");
-    while (flash_wr_size < FLASH_RECORD_SIZE) {
-        //read data from I2S bus, in this case, from ADC.
-        i2s_read(I2S_PORT, (void*) i2s_read_buff, min(i2s_read_len, FLASH_RECORD_SIZE - flash_wr_size), &bytes_read, portMAX_DELAY);
-        //example_disp_buf((uint8_t*) i2s_read_buff, 64);
-        //save original data from I2S(ADC) into flash.
-        i2s_adc_data_scale(flash_write_buff, (uint8_t*)i2s_read_buff, min(i2s_read_len, FLASH_RECORD_SIZE - flash_wr_size));
-        client.write((const char*) flash_write_buff, min(i2s_read_len, FLASH_RECORD_SIZE - flash_wr_size));
-        flash_wr_size += min(i2s_read_len, FLASH_RECORD_SIZE - flash_wr_size);
-        ets_printf("Sound recording %u%%\n", flash_wr_size * 100 / FLASH_RECORD_SIZE);
-        ets_printf("Never Used Stack Size: %u\n", uxTaskGetStackHighWaterMark(NULL));
-        Serial.print((char) flash_write_buff[0]);
+    while (flash_wr_size < FLASH_RECORD_SIZE)
+    {
+      i2s_read(I2S_PORT, (void *)i2s_read_buff, min(i2s_read_len, FLASH_RECORD_SIZE - flash_wr_size), &bytes_read, portMAX_DELAY);
+
+      i2s_adc_data_scale(flash_write_buff, (uint8_t *)i2s_read_buff, min(i2s_read_len, FLASH_RECORD_SIZE - flash_wr_size));
+      client.write((const char *)flash_write_buff, min(i2s_read_len, FLASH_RECORD_SIZE - flash_wr_size));
+      flash_wr_size += min(i2s_read_len, FLASH_RECORD_SIZE - flash_wr_size);
+      ets_printf("Sound recording %u%%\n", flash_wr_size * 100 / FLASH_RECORD_SIZE);
+      ets_printf("Never Used Stack Size: %u\n", uxTaskGetStackHighWaterMark(NULL));
+      Serial.print((char)flash_write_buff[0]);
     }
     // file.close();
 
@@ -159,63 +158,74 @@ String sendAudio() {
     i2s_read_buff = NULL;
     free(flash_write_buff);
     flash_write_buff = NULL;
-    
-    // listSPIFFS();
-    // vTaskDelete(NULL);
-    // client.write((uint8_t*) buffer, 1024); 
+
     client.print(tail);
-    
-    // esp_camera_fb_return(fb);
-    
+
     int timoutTimer = 5000;
     long startTimer = millis();
     boolean state = false;
-    
-    while ((startTimer + timoutTimer) > millis()) {
+
+    while ((startTimer + timoutTimer) > millis())
+    {
       Serial.print(".");
-      delay(100);      
-      while (client.available()) {
+      delay(100);
+      while (client.available())
+      {
         char c = client.read();
-        if (c == '\n') {
-          if (getAll.length()==0) { state=true; }
+        if (c == '\n')
+        {
+          if (getAll.length() == 0)
+          {
+            state = true;
+          }
           getAll = "";
         }
-        else if (c != '\r') { getAll += String(c); }
-        if (state==true) { getBody += String(c); }
+        else if (c != '\r')
+        {
+          getAll += String(c);
+        }
+        if (state == true)
+        {
+          getBody += String(c);
+        }
         startTimer = millis();
       }
-      if (getBody.length()>0) { break; }
+      if (getBody.length() > 0)
+      {
+        break;
+      }
     }
     Serial.println();
     client.stop();
     Serial.println(getBody);
   }
-  else {
-    getBody = "Connection to " + serverName +  " failed.";
+  else
+  {
+    getBody = "Connection to " + serverName + " failed.";
     Serial.println(getBody);
   }
   return getBody;
 }
 void i2s_adc_data_scale(uint8_t *d_buff, uint8_t *s_buff, uint32_t len)
 {
-    uint32_t j = 0;
-    uint32_t dac_value = 0;
-    for (int i = 0; i < len; i += 2)
-    {
-        dac_value = ((((uint16_t)(s_buff[i + 1] & 0xf) << 8) | ((s_buff[i + 0]))));
-        d_buff[j++] = 0;
-        d_buff[j++] = dac_value * 256 / 2048;
-    }
+  uint32_t j = 0;
+  uint32_t dac_value = 0;
+  for (int i = 0; i < len; i += 2)
+  {
+    dac_value = ((((uint16_t)(s_buff[i + 1] & 0xf) << 8) | ((s_buff[i + 0]))));
+    d_buff[j++] = 0;
+    d_buff[j++] = dac_value * 256 / 2048;
+  }
 }
 void micTask(void *parameter)
 {
 
-    i2sInit();
-    i2s_start(I2S_PORT);
+  i2sInit();
+  i2s_start(I2S_PORT);
 
-    size_t bytesIn = 0;
-    while (1)
-    {
-        sendAudio();
-    }
+  size_t bytesIn = 0;
+  while (1)
+  {
+    sendAudio();
+  }
 }
