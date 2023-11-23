@@ -128,9 +128,6 @@ String sendAudio()
     byte header[headerSize];
     wavHeader(header, FLASH_RECORD_SIZE);
 
-    // uint32_t imageLen = fb->len;
-    // uint32_t totalLen = imageLen + extraLen;
-
     client.write((char *)header, headerSize);
 
     int i2s_read_len = I2S_READ_LEN;
@@ -146,10 +143,8 @@ String sendAudio()
     Serial.println(" *** Recording Start *** ");
     while (flash_wr_size < FLASH_RECORD_SIZE)
     {
-      // read data from I2S bus, in this case, from ADC.
       i2s_read(I2S_PORT, (void *)i2s_read_buff, min(i2s_read_len, FLASH_RECORD_SIZE - flash_wr_size), &bytes_read, portMAX_DELAY);
-      // example_disp_buf((uint8_t*) i2s_read_buff, 64);
-      // save original data from I2S(ADC) into flash.
+
       i2s_adc_data_scale(flash_write_buff, (uint8_t *)i2s_read_buff, min(i2s_read_len, FLASH_RECORD_SIZE - flash_wr_size));
       client.write((const char *)flash_write_buff, min(i2s_read_len, FLASH_RECORD_SIZE - flash_wr_size));
       flash_wr_size += min(i2s_read_len, FLASH_RECORD_SIZE - flash_wr_size);
@@ -164,12 +159,7 @@ String sendAudio()
     free(flash_write_buff);
     flash_write_buff = NULL;
 
-    // listSPIFFS();
-    // vTaskDelete(NULL);
-    // client.write((uint8_t*) buffer, 1024);
     client.print(tail);
-
-    // esp_camera_fb_return(fb);
 
     int timoutTimer = 5000;
     long startTimer = millis();
