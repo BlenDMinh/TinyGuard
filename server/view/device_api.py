@@ -53,6 +53,6 @@ def audio_input():
         headers={
             "Content-Type": "application/json"
         },
-        response=WrapResponseDto.success(prediction, "Sucessfully").to_json(),
+        response=json.dumps(WrapResponseDto.success(prediction, "Sucessfully").to_json()),
         status=HTTPStatus.OK
     )

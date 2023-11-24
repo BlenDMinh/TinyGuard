@@ -20,6 +20,18 @@ WiFiClient client;
 #define FLASH_RECORD_SIZE (I2S_CHANNEL_NUM * I2S_SAMPLE_RATE * I2S_SAMPLE_BITS / 8 * RECORD_TIME)
 const int headerSize = 44;
 
+#include<ESP32Servo.h>
+#include<math.h>
+#define SERVO_PIN 2
+float A = 45;
+float OFFSET = A;
+float G = 9.8;
+float L = 0.01;
+Servo servo;
+bool is_crying = false;
+
+#include <ArduinoJson.h>
+
 void i2sInit()
 {
   i2s_config_t i2s_config = {
@@ -229,6 +241,57 @@ void micTask(void *parameter)
   size_t bytesIn = 0;
   while (1)
   {
-    sendAudio();
+    String result = sendAudio();
+    DynamicJsonDocument doc(200);
+    DeserializationError error = deserializeJson(doc, result);
+    if(error) {
+      Serial.println("Error decoding response");
+      continue;
+    }
+    String label = doc["result"]["prediction"];
+    Serial.println(label);
+    if(label == "Crying") {
+      is_crying = true;
+    } else {
+      is_crying = false;
+    }
+  }
+}
+float angle = 0;
+void servoInit() {
+  pinMode(SERVO_PIN, OUTPUT);
+  servo.attach(SERVO_PIN);
+}
+
+void lerpTo(float target, float weight = 0.5, float eps = 1e-3, int delay_time = 20) {
+  while(fabs(target - angle) > eps) {
+    angle = angle * weight + target * (1 - weight);
+    int servoAngle = (int) angle;
+    servo.write((int) OFFSET + servoAngle);
+    delay(delay_time);
+  }
+}
+
+void swing_step(float &angle, float &vtheta, float time_step = 0.001) {
+  float atheta = -G/L * sin(angle);
+  vtheta += atheta * time_step;
+  angle += vtheta * time_step;
+}
+
+void servoTask(void *parameter) {
+  servoInit();
+  while(1) {
+    if(is_crying) {
+      lerpTo(A);
+      float vtheta = 0;
+      while(is_crying) {
+        swing_step(angle, vtheta);
+        int servoAngle = (int) angle;
+        servo.write((int) OFFSET + servoAngle);
+        delay(20);
+      }
+    } else {
+      lerpTo(0);
+    }
   }
 }
