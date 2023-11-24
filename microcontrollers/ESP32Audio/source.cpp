@@ -43,13 +43,16 @@ void i2sInit()
 
   i2s_set_pin(I2S_PORT, &pin_config);
 }
-void connectWiFi()
+void connectWiFi(const char *ssid, const char *password)
 {
+  Serial.println("Detected new network! Reconnecting...");
   WiFi.begin(ssid, password);
 
   while (WiFi.status() != WL_CONNECTED)
   {
     delay(500);
+    if(Serial.available())
+      return;
     Serial.print(".");
   }
   Serial.println("");

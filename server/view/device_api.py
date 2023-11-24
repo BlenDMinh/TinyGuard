@@ -28,6 +28,7 @@ def image_input():
         )
 
     device_service: DeviceService = container.get(Component.DeviceService)
+    image.save("image.jpg");
     prediction: ImagePredict = device_service.predict_image(image)
     emit(Event.ImagePrediction, prediction.to_json(),
          namespace="/test_i", broadcast=True)
@@ -46,6 +47,7 @@ def audio_input():
     audio = BytesIO(audio.read())
     audio, sr = torchaudio.load(audio)
     prediction = AudioPredict(wavform=audio).to_json()
+    emit(Event.AudioPrediction, prediction, namespace="/test_a", broadcast=True)
     print(prediction)
     return Response(
         headers={

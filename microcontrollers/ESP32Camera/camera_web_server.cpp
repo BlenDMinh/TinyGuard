@@ -51,7 +51,7 @@ const int serverPort = 5000;
 
 WiFiClient client;
 
-const int timerInterval = 30000;
+const int timerInterval = 1000;
 unsigned long previousMillis = 0;
 
 String sendPhoto()
