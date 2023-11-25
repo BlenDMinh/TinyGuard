@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:tinyguard/ui/views/base/responsive.dart';
-import 'package:tinyguard/view_models.dart/base_view_model.dart';
+import 'package:tinyguard/view_models/base_view_model.dart';
 
 class BaseView<VM extends BaseViewModel?> extends StatelessWidget {
   final Color? backgroundColor;
@@ -47,14 +47,16 @@ class BaseView<VM extends BaseViewModel?> extends StatelessWidget {
       child: Scaffold(
         resizeToAvoidBottomInset: resizeToAvoidBottomInset,
         appBar: appBar,
-        body: OrientationBuilder(
-          builder: (ctx, __) {
-            return Responsive(
-              mobile: mobileBuilder.call(ctx),
-              tablet: tabletBuilder?.call(ctx),
-            );
-          },
-        ),
+        body: 
+        // OrientationBuilder(
+        //   builder: (ctx, __) {
+        //     return 
+            Responsive(
+              mobile: mobileBuilder.call(context),
+              tablet: tabletBuilder?.call(context),
+            ),
+        //   },
+        // ),
         bottomNavigationBar: bottomNavigationBuilder?.call(context),
         backgroundColor: backgroundColor,
       ),

@@ -13,7 +13,7 @@ class AuthEntity extends BaseResponseApiEntity {
   @override
   void initialValue() {
     result = body['result'] != null
-        ? ResultEntity.fromJson(body['result'] as Map<String, dynamic>)
+        ? ResultEntity.fromJson(body['result'])
         : null;
   }
 }

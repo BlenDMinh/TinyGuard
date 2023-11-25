@@ -4,7 +4,7 @@ from tqdm import tqdm
 import torchaudio
 import torch
 
-from audio_utils import CLEAN, DELTA_TIME, RAW, SAMPLE_RATE, THRESHOLD
+from .audio_utils import CLEAN, DELTA_TIME, RAW, SAMPLE_RATE, THRESHOLD
 
 
 def envelope(y, rate, threshold):

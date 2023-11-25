@@ -27,7 +27,7 @@ class LogInViewModel extends BaseViewModel {
     debugPrint(emailController.text);
     debugPrint(passwordController.text);
     final entity = await userRepository.login(
-      UserCredentials(
+      credentials: UserCredentials(
         email: emailController.text,
         password: passwordController.text,
       ),

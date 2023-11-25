@@ -2,7 +2,7 @@ import os
 from torch.utils.data import Dataset
 import torchaudio
 
-from audio_utils import CLASS_MAPPING
+from .audio_utils import CLASS_MAPPING
 import csv
 
 

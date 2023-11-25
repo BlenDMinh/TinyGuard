@@ -49,7 +49,7 @@ class _FirstSetupScreenState extends State<FirstSetupScreen> {
               title: 'First setup ',
             ),
             SizedBox(
-              height: 50.h,
+              height: 50,
             ),
             Padding(
               padding: EdgeInsets.symmetric(horizontal: 20),
@@ -64,7 +64,7 @@ class _FirstSetupScreenState extends State<FirstSetupScreen> {
                     ),
                   ),
                   SizedBox(
-                    height: 20.h,
+                    height: 20,
                   ),
                   AppTextField(
                     onChanged: (_) {},
@@ -73,7 +73,7 @@ class _FirstSetupScreenState extends State<FirstSetupScreen> {
                     backgroundColor: Colors.grey[100],
                   ),
                   SizedBox(
-                    height: 20.h,
+                    height: 20,
                   ),
                   GestureDetector(
                     onTap: () => Get.toNamed(

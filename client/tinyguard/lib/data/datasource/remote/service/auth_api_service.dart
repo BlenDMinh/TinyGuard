@@ -12,6 +12,7 @@ import 'package:tinyguard/data/datasource/remote/entity/user_entity.dart';
 
 enum AuthRoute {
   login('user/login'),
+  register('user/register'),
   resetPassword('/reset-password');
 
   const AuthRoute(this.path);
@@ -23,25 +24,28 @@ class AuthAPIService {
 
   AuthAPIService({required this.client});
 
-  Future<AuthEntity> login(UserCredentials credentials) async {
+  Future<AuthEntity> login({UserCredentials? credentials = null}) async {
     String path = AuthRoute.login.path;
     debugPrint('credentials');
+    debugPrint(credentials?.toJson().toString());
+    final response = await client.post(
+        url: path,
+        data: credentials != null ? jsonEncode(credentials.toJson()) : "{}",
+        requestOptions: Options()
+          ..headers = {"Content-Type": "application/json"});
+    return AuthEntity.fromJson(response as Map<String, dynamic>);
+  }
+
+  Future<UserEntity> register(UserRegisterCredentials credentials) async {
+    String path = AuthRoute.register.path;
+    debugPrint('register credentials');
     debugPrint(credentials.toJson().toString());
     final response = await client.post(
         url: path,
         data: jsonEncode(credentials.toJson()),
         requestOptions: Options()
           ..headers = {"Content-Type": "application/json"});
-    return AuthEntity.fromJson(response as Map<String, dynamic>);
-  }
-
-  Future<UserEntity> register(
-      UserRegisterCredentials userRegisterCredentials) async {
-    final response = await client.post(
-      url: '',
-      data: userRegisterCredentials.toJson(),
-    );
-    return response;
+    return UserEntity.fromJson(response as Map<String, dynamic>);
   }
 
   Future<UserResetPasswordEntity> resetPassword(

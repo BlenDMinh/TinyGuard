@@ -1,4 +1,5 @@
-import yolov3_config as config
+from . import yolov3_config as config
+# import yolov3_config as config
 import matplotlib.pyplot as plt
 import matplotlib.patches as patches
 import numpy as np
@@ -271,7 +272,7 @@ def plot_image(image, boxes):
             upper_left_x * width,
             upper_left_y * height,
             # s=class_labels[int(class_pred)],
-            s='Cry' if box[0] < 1 else 'No Crying',
+            s='Cry' if class_pred == 0 else 'No Crying',
             color="white",
             verticalalignment="top",
             bbox={"color": "red", "pad": 0},
@@ -406,13 +407,15 @@ def check_class_accuracy(model, loader, threshold):
             tot_obj += torch.sum(obj)
             correct_noobj += torch.sum(obj_preds[noobj] == y[i][..., 0][noobj])
             tot_noobj += torch.sum(noobj)
-
+    class_acc = (correct_class/(tot_class_preds+1e-16))*100
+    no_obj_acc = (correct_noobj/(tot_noobj+1e-16))*100
+    obj_acc = (correct_obj/(tot_obj+1e-16))*100
     print(
-        f"Class accuracy is: {(correct_class/(tot_class_preds+1e-16))*100:2f}%")
-    print(f"No obj accuracy is: {(correct_noobj/(tot_noobj+1e-16))*100:2f}%")
-    print(f"Obj accuracy is: {(correct_obj/(tot_obj+1e-16))*100:2f}%")
-    return (correct_class/(tot_class_preds+1e-16))*100, (correct_noobj/(tot_noobj+1e-16))*100, (correct_obj/(tot_obj+1e-16))*100
+        f"Class accuracy is: {class_acc:2f}%")
+    print(f"No obj accuracy is: {no_obj_acc:2f}%")
+    print(f"Obj accuracy is: {obj_acc:2f}%")
     model.train()
+    return class_acc, no_obj_acc, obj_acc
 
 
 def get_mean_std(loader):

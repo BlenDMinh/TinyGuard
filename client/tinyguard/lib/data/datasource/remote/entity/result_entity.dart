@@ -11,6 +11,7 @@ class ResultEntity {
     return ResultEntity(
         accessToken: json['access_token'] as String?,
         refreshToken: json['refresh_token'] as String?,
-        user: UserEntity.fromJson(json['user'] as Map<String, dynamic>));
+        user: json['user'] != null ? UserEntity.fromJson(json['user'] as Map<String, dynamic>) : null
+      );
   }
 }

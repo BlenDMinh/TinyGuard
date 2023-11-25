@@ -24,4 +24,5 @@ class User(db.Model):
             email=self.email,
             phone_number=self.phone_number,
             role=self.role.to_json() if self.role else "None",
+            devices=[device.to_json(False) for device in self.devices]
         )

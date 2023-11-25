@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
+import 'package:tinyguard/data/datasource/remote/api/api_exception.dart';
+import 'package:tinyguard/data/repository/user_repository.dart';
 import 'package:tinyguard/enums.dart';
 import 'package:tinyguard/flavor_config.dart';
 import 'package:tinyguard/locator_config.dart';
@@ -18,13 +20,17 @@ void main() async {
     SystemUiOverlay.bottom,
     SystemUiOverlay.top,
   ]);
-  setupLocator();
+  await setupLocator();
   FlavorConfig(
-      baseApiUrl: "http://192.168.5.22:5000",
+      baseApiUrl: "http://10.10.29.217:5000",
       flavor: Flavor.development,
       versionAPI: '/api/');
-
+  //try {
+  //  await getIt.get<UserRepository>().login();
+  //  runApp(const MainApp(initRoute: Routes.firstSetup));
+  //} on ApiException catch (e) {
   runApp(const MainApp());
+  //}
 }
 
 class Routes {
@@ -43,7 +49,9 @@ class Routes {
     },
     monitor: (context) {
       String urlLink = ModalRoute.of(context)?.settings.arguments as String;
-      return MonitorScreen(urlLink: urlLink);
+      return MonitorScreen(
+        urlLink: urlLink,
+      );
     },
     signIn: (context) {
       return LoginScreen();
@@ -55,13 +63,14 @@ class Routes {
 }
 
 class MainApp extends StatelessWidget {
-  const MainApp({super.key});
+  final String initRoute;
+  const MainApp({super.key, this.initRoute = Routes.splash1});
 
   @override
   Widget build(BuildContext context) {
     return GetMaterialApp(
       debugShowCheckedModeBanner: false,
-      initialRoute: Routes.splash1,
+      initialRoute: initRoute,
       routes: Routes.routes,
     );
   }

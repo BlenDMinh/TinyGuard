@@ -1,7 +1,9 @@
 import torchaudio
 import torch
 import json
-from server.audio_process.audio_utils import DELTA_TIME, SAMPLE_RATE
+from audio_process.audio_utils import DELTA_TIME, SAMPLE_RATE
+from entity.device import Device
+from audio_process.predict import predict_one
 
 
 class BoundingBox:
@@ -10,7 +12,7 @@ class BoundingBox:
         self.y = y
         self.w = w
         self.h = h
-        self.label = label
+        self.label = int(label)
         self.confidence = confidence
 
     def to_json(self, to_string: bool = False) -> dict[str, any] | str:
@@ -22,16 +24,20 @@ class BoundingBox:
 
 
 class ImagePredict:
-    def __init__(self, bboxes: list[BoundingBox]) -> None:
+    def __init__(self, bboxes: list[BoundingBox], device: Device = None) -> None:
         self.bboxes = bboxes
+        self.device = device
         is_crying = False
         for bbox in bboxes:
             is_crying = is_crying or bbox.label == 0
         self.is_crying = is_crying
 
-    def to_json(self, to_string: bool) -> dict[str, any] | str:
-        json_obj = dict(bboxes=list(map(lambda e: e.to_json(),
-                        self.bboxes)), is_crying=self.is_crying)
+    def to_json(self, to_string: bool = False) -> dict[str, any] | str:
+        json_obj = dict(
+            device=self.device.to_json() if self.device else Device(code="test").to_json(),
+            bboxes=list(map(lambda e: e.to_json(),
+                        self.bboxes)),
+            is_crying=self.is_crying)
         if to_string:
             return json.dumps(json_obj)
         return json_obj
@@ -50,37 +56,36 @@ def envelope(y, rate, threshold):
     return mask
 
 
-def downsample_mono(waveform, sample_rate, sr):
-    if waveform.shape[0] > 1:
-        waveform = torch.mean(waveform, dim=0, keepdim=True)
-    if sample_rate != sr:
-        resampler = torchaudio.transforms.Resample(
-            orig_freq=sample_rate, new_freq=sr)
-        waveform = resampler(waveform)
-    return sr, waveform
+# def downsample_mono(waveform, sample_rate, sr):
+#     if waveform.shape[0] > 1:
+#         waveform = torch.mean(waveform, dim=0, keepdim=True)
+#     if sample_rate != sr:
+#         resampler = torchaudio.transforms.Resample(
+#             orig_freq=sample_rate, new_freq=sr)
+#         waveform = resampler(waveform)
+#     return sr, waveform
 
 
-def truncate(wavform, sample_rate):
-    rate, wav = downsample_mono(wavform, sample_rate, SAMPLE_RATE)
+def truncate(wavform):
     delta_sample = int(DELTA_TIME*SAMPLE_RATE)
-    mask = envelope(wav[0], SAMPLE_RATE, THRESHOLD)
-    wav = wav[:, mask]
+    mask = envelope(wavform.reshape(-1), SAMPLE_RATE, THRESHOLD)
+    wav = wavform[:, mask]
     length_signal = wav.shape[1]
     if length_signal < delta_sample:
+        wav = torch.nn.functional.pad(
+            wav, (0, delta_sample-length_signal))
         return wav
     else:
-        return wav[:, 0:DELTA_TIME*SAMPLE_RATE]
+        return wav[:, :DELTA_TIME*SAMPLE_RATE]
 
 
 class AudioPredict:
-    def __init__(self, wavform, sample_rate) -> None:
-        self.wav = truncate(wavform=wavform, sample_rate=sample_rate)
+    def __init__(self, wavform) -> None:
+        self.wav = truncate(wavform=wavform)
 
-    def to_json(self, to_string: bool) -> dict[str, any] | str:
-        if (self.wav.size(1)) < DELTA_TIME * SAMPLE_RATE:
-            json_obj = dict(is_crying=False)
-        else:
-            json_obj = dict(is_crying=self.is_crying)
+    def to_json(self, to_string: bool = False) -> dict[str, any] | str:
+        prediction = predict_one(waveform=self.wav)
+        json_obj = dict(prediction=prediction)
         if to_string:
             return json.dumps(json_obj)
         return json_obj
