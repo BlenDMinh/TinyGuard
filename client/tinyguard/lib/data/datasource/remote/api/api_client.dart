@@ -1,7 +1,6 @@
 import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
-import 'package:tinyguard/data/datasource/remote/api/api_constants.dart';
 import 'package:tinyguard/data/datasource/remote/api/api_exception.dart';
 import 'package:tinyguard/data/datasource/remote/entity/auth_entity.dart';
 import 'package:tinyguard/data/shared/constants.dart';
@@ -52,8 +51,7 @@ class APIClient {
       final response = await dio.get(uri, options: options);
       LogUtils.methodOut(message: '${response.data}');
       return response.data;
-    } 
-    on DioException catch (dioError) {
+    } on DioException catch (dioError) {
       onError(dioError);
     }
   }
@@ -65,18 +63,18 @@ class APIClient {
   }) async {
     final String? accessToken = sPref.accessToken;
     // try {
-      Options options = Options();
-      if (requestOptions != null) {
-        options = requestOptions;
-      }
-      if (accessToken != null && accessToken.isNotEmpty) {
-        options.headers = {'Authorization': '$accessToken'};
-      }
-      String uri = '${FlavorConfig.instance.baseURL}$url';
-      LogUtils.methodIn(message: uri);
-      debugPrint(options.headers.toString());
-      final response = await dio.post(uri, data: data, options: options);
-      return response.data;
+    Options options = Options();
+    if (requestOptions != null) {
+      options = requestOptions;
+    }
+    if (accessToken != null && accessToken.isNotEmpty) {
+      options.headers = {'Authorization': '$accessToken'};
+    }
+    String uri = '${FlavorConfig.instance.baseURL}$url';
+    LogUtils.methodIn(message: uri);
+    debugPrint(options.headers.toString());
+    final response = await dio.post(uri, data: data, options: options);
+    return response.data;
     // } on DioException catch (dioError) {
     //   onError(dioError);
     // }
@@ -184,16 +182,18 @@ extension APIClientRefreshToken on APIClient {
       LogUtils.d("Set new access token: ${sPref.accessToken}");
     } catch (e) {
       LogUtils.e(e.toString());
-      throw UnauthorizedException();
+      throw 'PLEASE LOG IN, REFRESH TOKEN IS CURRENTLY SUCK!';
+      //throw UnauthorizedException();
     }
   }
 
   Future<Response<dynamic>> _retry(RequestOptions requestOptions) async {
-    final options = Options(method: requestOptions.method, headers: requestOptions.headers);
+    final options =
+        Options(method: requestOptions.method, headers: requestOptions.headers);
     options.headers?['Authorization'] = '${sPref.accessToken!}';
     LogUtils.d(requestOptions.data.toString());
     LogUtils.d("Retrying ${options.method} ${requestOptions.path}");
-    if(options.headers != null) {
+    if (options.headers != null) {
       LogUtils.d("Headers: ${options.headers.toString()}");
     }
 

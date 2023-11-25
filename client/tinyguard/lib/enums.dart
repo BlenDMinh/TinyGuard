@@ -54,6 +54,28 @@ enum PaymentMethod {
   visa,
 }
 
+enum BabyStatus {
+  noise,
+  crying,
+  laugh,
+  silence,
+}
+
+extension BabyStatusExtension on BabyStatus {
+  String get statusString {
+    switch (this) {
+      case BabyStatus.noise:
+        return 'Noise';
+      case BabyStatus.crying:
+        return 'Crying';
+      case BabyStatus.laugh:
+        return 'Laugh';
+      case BabyStatus.silence:
+        return 'Silence';
+    }
+  }
+}
+
 enum UsePoint {
   fullPoint,
   manual,

@@ -8,6 +8,7 @@ import 'package:tinyguard/data/repository/device_repository.dart';
 abstract class UserRepository {
   Future<AuthEntity> login({UserCredentials? credentials = null});
   Future<UserEntity> register(UserRegisterCredentials credentials);
+  User? get user;
 }
 
 class User {
@@ -19,11 +20,14 @@ class User {
   String? role;
   List<Device> devices = [];
 
-  User(this.id, this.username, this.age, this.phone_number, this.email, this.role, this.devices);
+  User(this.id, this.username, this.age, this.phone_number, this.email,
+      this.role, this.devices);
 
   factory User.fromEntity(UserEntity entity) {
-    List<Device> devices = entity.devices.map((e) => Device.fromEntity(e)).toList();
-    return User(entity.id!, entity.username!, entity.age, entity.phone_number!, entity.email!, entity.role, devices);
+    List<Device> devices =
+        entity.devices.map((e) => Device.fromEntity(e)).toList();
+    return User(entity.id!, entity.username!, entity.age, entity.phone_number!,
+        entity.email!, entity.role, devices);
   }
 }
 
@@ -39,7 +43,7 @@ class UserRepositoryImpl extends UserRepository {
   @override
   Future<AuthEntity> login({UserCredentials? credentials = null}) async {
     return authAPIService.login(credentials: credentials).then((authEntity) {
-      if(authEntity.result?.user != null)
+      if (authEntity.result?.user != null)
         this.user = User.fromEntity(authEntity.result!.user!);
       return authEntity;
     });
