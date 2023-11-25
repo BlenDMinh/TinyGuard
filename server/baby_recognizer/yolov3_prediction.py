@@ -132,7 +132,7 @@ def reverse_transform(image, box):
     
     return box
 
-def predict(image, reverse_transform=True):
+def predict(image, do_reverse_transform=True):
     image = np.array(image.convert('RGB'))
     t_image = transforms(image=image)['image']
     anchors = (
@@ -153,6 +153,6 @@ def predict(image, reverse_transform=True):
     nms_boxes = non_max_suppression(
         bboxes[0], iou_threshold=0.5, threshold=0.6, box_format="midpoint",
     )
-    if reverse_transform:
+    if do_reverse_transform:
         nms_boxes = map(lambda box: reverse_transform(image, box), nms_boxes)
     return nms_boxes

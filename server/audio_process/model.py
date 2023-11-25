@@ -1,6 +1,6 @@
 from torch import nn
 
-from audio_utils import NUM_CLASSES
+from .audio_utils import NUM_CLASSES
 
 
 class CNNNetwork(nn.Module):

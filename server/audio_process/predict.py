@@ -1,10 +1,11 @@
 import torch
 from torch.utils.data import DataLoader
-from model import CNNNetwork
-from dataset import CryDataset
-from train import mel_spectrogram
+from .model import CNNNetwork
+from .dataset import CryDataset
+from .train import mel_spectrogram
+import os
 
-from audio_utils import CLASS_MAPPING, NUM_CLASSES
+from .audio_utils import CLASS_MAPPING, NUM_CLASSES
 
 
 def predict(model, input, target, CLASS_MAPPING):
@@ -18,6 +19,26 @@ def predict(model, input, target, CLASS_MAPPING):
         predicted = CLASS_MAPPING[predicted_index]
         expected = CLASS_MAPPING[target]
     return predicted, expected
+
+
+model = CNNNetwork()
+state_dict = torch.load(os.path.join(os.path.dirname(
+    __file__), "cnnnet.pth"), map_location=torch.device('cpu'))
+model.load_state_dict(state_dict)
+
+
+def predict_one(waveform, CLASS_MAPPING=CLASS_MAPPING):
+    model.eval()
+    input = mel_spectrogram(waveform).unsqueeze(0)
+    with torch.no_grad():
+        predictions = model(input)
+        print(predictions)
+        predicted_index = predictions[0].argmax(0)
+        if predicted_index < 0 or predicted_index >= NUM_CLASSES:
+            print("Predicted index is out of range.")
+            return None
+        predicted = CLASS_MAPPING[predicted_index]
+    return predicted
 
 
 if __name__ == "__main__":

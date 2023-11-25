@@ -18,7 +18,6 @@ class WiFiCharacteristicCallbacks : public BLECharacteristicCallbacks
     Vector<String> wifiData = split(value.c_str(), ':');
     Serial.println(wifiData[0]);
     Serial.println(wifiData[1]);
-    // connectWifi(wifiData[0], wifiData[1]);
   }
 };
 
@@ -40,11 +39,10 @@ void bleInit()
 
   Serial.println("Starting Service!");
   pService->start();
-  // BLEAdvertising *pAdvertising = pServer->getAdvertising();  // this still is working for backward compatibility
   BLEAdvertising *pAdvertising = BLEDevice::getAdvertising();
   pAdvertising->addServiceUUID(SERVICE_UUID);
   pAdvertising->setScanResponse(true);
-  pAdvertising->setMinPreferred(0x06); // functions that help with iPhone connections issue
+  pAdvertising->setMinPreferred(0x06);
   pAdvertising->setMinPreferred(0x12);
   BLEDevice::startAdvertising();
 }

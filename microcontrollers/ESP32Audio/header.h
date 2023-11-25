@@ -13,9 +13,10 @@ extern char *password;
 
 void i2s_adc_data_scale(uint8_t *d_buff, uint8_t *s_buff, uint32_t len);
 void micTask(void *parameter);
+void servoTask(void *parameter);
 void wavHeader(byte *header, int wavSize);
 String sendAudio();
-void connectWiFi();
+void connectWiFi(const char*, const char*);
 void i2sInit();
 
 #endif

@@ -3,6 +3,7 @@ from PIL import Image
 from model.predict_model import ImagePredict, AudioPredict, BoundingBox
 from baby_recognizer import yolov3_prediction as yolo
 
+
 class DeviceService:
     def __init__(self) -> None:
         pass
