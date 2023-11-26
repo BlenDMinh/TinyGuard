@@ -1,5 +1,6 @@
 from http import HTTPStatus
 import json
+import cv2
 from flask import jsonify, request, Response
 from flask_socketio import emit, send
 from config import socketio
@@ -9,11 +10,8 @@ from service.device_service import DeviceService
 from service.models import WrapResponseDto
 import torchaudio
 from io import BytesIO
-import tempfile
-import os
-import torch
-import numpy
 
+data = None
 
 def image_input():
     image = request.files.get('imageFile')
@@ -26,9 +24,11 @@ def image_input():
                 "Bad request", "imageFile is missing").to_json()),
             status=HTTPStatus.BAD_REQUEST
         )
+        
+    global data
+    data = image.read()
 
     device_service: DeviceService = container.get(Component.DeviceService)
-    image.save("image.jpg");
     prediction: ImagePredict = device_service.predict_image(image)
     emit(Event.ImagePrediction, prediction.to_json(),
          namespace="/test_i", broadcast=True)
@@ -40,6 +40,14 @@ def image_input():
             prediction.to_json(), "Successfully").to_json()),
         status=HTTPStatus.OK
     )
+
+def image_feed(code):
+    while True:
+        yield (b'--frame\r\n'
+               b'Content-Type: image/jpeg\r\n\r\n' + data + b'\r\n')
+
+def image_stream(code):
+    return Response(image_feed(code), mimetype='multipart/x-mixed-replace; boundary=frame')
 
 
 def audio_input():

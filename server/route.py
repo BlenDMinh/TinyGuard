@@ -1,6 +1,6 @@
 from view.user_api import testuser
 from view.index import index
-from view.device_api import audio_input, image_input
+from view.device_api import audio_input, image_input, image_stream
 from view.auth_api import login, register, request_access_token
 
 route = {
@@ -34,19 +34,14 @@ route = {
         "view": None,
         "methods": ["DELETE"]
     },
-    "/api/device/image_prediction": {
-        "endpoint": "api get image prediction",
-        "view": None,
-        "methods": ["GET"]
-    },
     "/api/device/image_input": {
         "endpoint": "api receive image from device",
         "view": image_input,
         "methods": ["POST"]
     },
-    "/api/device/audio_prediction": {
-        "endpoint": "api get audio prediction",
-        "view": None,
+    "/api/device/<code>/image_stream": {
+        "endpoint": "api image stream",
+        "view": image_stream,
         "methods": ["GET"]
     },
     "/api/device/audio_input": {

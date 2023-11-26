@@ -51,7 +51,7 @@ const int serverPort = 5000;
 
 WiFiClient client;
 
-const int timerInterval = 1000;
+const int timerInterval = 200;
 unsigned long previousMillis = 0;
 
 String sendPhoto()
@@ -173,11 +173,11 @@ esp_err_t camInit()
   config.pin_pwdn = PWDN_GPIO_NUM;
   config.pin_reset = RESET_GPIO_NUM;
   config.xclk_freq_hz = 20000000;
-  config.frame_size = FRAMESIZE_UXGA;
+  config.frame_size = FRAMESIZE_XGA;
   config.pixel_format = PIXFORMAT_JPEG;
   config.grab_mode = CAMERA_GRAB_WHEN_EMPTY;
   config.fb_location = CAMERA_FB_IN_PSRAM;
-  config.jpeg_quality = 12;
+  config.jpeg_quality = 24;
   config.fb_count = 1;
 
   setupLedFlash(LED_GPIO_NUM);
