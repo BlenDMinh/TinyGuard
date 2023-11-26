@@ -2,16 +2,16 @@ import csv
 import torchaudio
 import torch
 from tqdm import tqdm
-# from .dataset import CryDataset
-from dataset import CryDataset
+from .dataset import CryDataset
+# from dataset import CryDataset
 from torch.utils.data import DataLoader
-# from .model import CNNNetwork
-from model import CNNNetwork
+from .model import CNNNetwork
+# from model import CNNNetwork
 from torch import nn
 
 
-# from .audio_utils import BATCH_SIZE, EPOCHS, LEARNING_RATE, N_MELS, SAMPLE_RATE
-from audio_utils import BATCH_SIZE, EPOCHS, LEARNING_RATE, N_MELS, SAMPLE_RATE
+from .audio_utils import BATCH_SIZE, EPOCHS, LEARNING_RATE, N_MELS, SAMPLE_RATE
+# from audio_utils import BATCH_SIZE, EPOCHS, LEARNING_RATE, N_MELS, SAMPLE_RATE
 
 
 def create_data_loader(train_data, batch_size):
