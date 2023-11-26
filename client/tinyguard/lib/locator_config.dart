@@ -4,6 +4,7 @@ import 'package:tinyguard/data/datasource/remote/service/auth_api_service.dart';
 import 'package:tinyguard/data/repository/user_repository.dart';
 import 'package:tinyguard/data/shared_preferences/spref_auth_model.dart';
 import 'package:tinyguard/view_models/log_in_view_model.dart';
+import 'package:tinyguard/view_models/monitor_view_model.dart';
 import 'package:tinyguard/view_models/register_view_model.dart';
 
 GetIt getIt = GetIt.instance;
@@ -18,4 +19,7 @@ Future<void> setupLocator() async {
       userRepository: getIt.get<UserRepository>(), sPref: SPrefAuthModel()));
   getIt.registerLazySingleton<RegisterViewModel>(
       () => RegisterViewModel(userRepository: getIt.get<UserRepository>()));
+
+  getIt.registerLazySingleton<MonitorViewModel>(
+      () => MonitorViewModel(userRepository: getIt.get<UserRepository>()));
 }

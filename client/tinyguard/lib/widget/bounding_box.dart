@@ -21,13 +21,28 @@ class BoundingBox extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     debugPrint("X: ${x}, Y: ${y}");
+    debugPrint(
+        "screen height: ${MediaQuery.of(context).size.height} screen width: ${MediaQuery.of(context).size.width}");
     return Transform(
-      transform: Matrix4.translationValues(x, y, 0.0),
+      transform: Matrix4.translationValues(
+          (y - height / 2) * MediaQuery.of(context).size.width,
+          (x - width / 2) * MediaQuery.of(context).size.height,
+          0.0),
       child: Column(
         children: [
           Container(
-            height: height,
-            width: width,
+            padding: EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+            decoration:
+                BoxDecoration(color: isCrying ? Colors.red : Colors.green),
+            child: Text(
+              'Confidence: ${(confidence * 100).ceil()}%',
+              style:
+                  TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+            ),
+          ),
+          Container(
+            height: height * MediaQuery.of(context).size.height,
+            width: width * MediaQuery.of(context).size.width,
             decoration: BoxDecoration(
               border: Border.all(
                 width: 5,
@@ -40,7 +55,7 @@ class BoundingBox extends StatelessWidget {
             decoration:
                 BoxDecoration(color: isCrying ? Colors.red : Colors.green),
             child: Text(
-              isCrying ? 'Baby is crying' : "He's fine",
+              isCrying ? 'Your baby is crying' : "Your baby is fine",
               style:
                   TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
             ),
