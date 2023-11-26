@@ -6,7 +6,7 @@
 
 extern String serverName;
 extern String serverPath;
-extern const int serverPort;
+extern int serverPort;
 extern WiFiClient client;
 extern char *ssid;
 extern char *password;

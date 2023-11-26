@@ -11,7 +11,7 @@ from service.models import WrapResponseDto
 import torchaudio
 from io import BytesIO
 
-data = None
+data = b''
 
 def image_input():
     image = request.files.get('imageFile')

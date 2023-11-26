@@ -1,6 +1,7 @@
 #include "camera_web_server.h"
 #include "esp_camera.h"
 #include <WiFi.h>
+#include <WiFiClientSecure.h>
 #include "esp_wifi.h"
 #include "esp_timer.h"
 #include "img_converters.h"
@@ -11,6 +12,7 @@
 #include "esp_http_server.h"
 
 String serverName = "192.168.5.165";
+String useSecure = "no";
 
 typedef struct
 {
@@ -47,107 +49,114 @@ void setupLedFlash(int pin);
 
 String imageServerPath = "/api/device/image_input";
 
-const int serverPort = 5000;
+int serverPort = 5000;
 
 WiFiClient client;
+WiFiClientSecure client_secure;
 
 const int timerInterval = 200;
 unsigned long previousMillis = 0;
 
 String sendPhoto()
 {
+  WiFiClient *_client = &client;
+  int port = serverPort;
+  if(useSecure == "yes") {
+    _client = &client_secure;
+    port = 80;
+  }
+
   String getAll;
   String getBody;
-  Serial.println("Connecting to server: " + serverName);
+  Serial.println("Connecting to server: " + serverName + ":" + String(serverPort));
 
-  if (client.connect(serverName.c_str(), serverPort))
+  if (_client->connect(serverName.c_str(), port))
   {
     Serial.println("Connection successful!");
-
-    fb = esp_camera_fb_get();
-    if (!fb)
-    {
-      Serial.println("Camera capture failed");
-      delay(1000);
-      ESP.restart();
-    }
-
-    String head = "--RandomNerdTutorials\r\nContent-Disposition: form-data; name=\"imageFile\"; filename=\"esp32-cam.jpg\"\r\nContent-Type: image/jpeg\r\n\r\n";
-    String tail = "\r\n--RandomNerdTutorials--\r\n";
-
-    uint32_t imageLen = fb->len;
-    uint32_t extraLen = head.length() + tail.length();
-    uint32_t totalLen = imageLen + extraLen;
-
-    client.println("POST " + imageServerPath + " HTTP/1.1");
-    client.println("Host: " + serverName);
-    client.println("Content-Length: " + String(totalLen));
-    client.println("Content-Type: multipart/form-data; boundary=RandomNerdTutorials");
-    client.println();
-    client.print(head);
-
-    uint8_t *fbBuf = fb->buf;
-    size_t fbLen = fb->len;
-    for (size_t n = 0; n < fbLen; n = n + 1024)
-    {
-      if (n + 1024 < fbLen)
-      {
-        client.write(fbBuf, 1024);
-        fbBuf += 1024;
-      }
-      else if (fbLen % 1024 > 0)
-      {
-        size_t remainder = fbLen % 1024;
-        client.write(fbBuf, remainder);
-      }
-    }
-    client.print(tail);
-
-    esp_camera_fb_return(fb);
-
-    int timoutTimer = 5000;
-    long startTimer = millis();
-    boolean state = false;
-
-    while ((startTimer + timoutTimer) > millis())
-    {
-      Serial.print(".");
-      delay(100);
-      while (client.available())
-      {
-        char c = client.read();
-        if (c == '\n')
-        {
-          if (getAll.length() == 0)
-          {
-            state = true;
-          }
-          getAll = "";
-        }
-        else if (c != '\r')
-        {
-          getAll += String(c);
-        }
-        if (state == true)
-        {
-          getBody += String(c);
-        }
-        startTimer = millis();
-      }
-      if (getBody.length() > 0)
-      {
-        break;
-      }
-    }
-    Serial.println();
-    client.stop();
-    Serial.println(getBody);
-  }
-  else
-  {
+  } else {
     getBody = "Connection to " + serverName + " failed.";
     Serial.println(getBody);
+    return getBody;
   }
+
+  fb = esp_camera_fb_get();
+  if (!fb)
+  {
+    Serial.println("Camera capture failed");
+    delay(1000);
+    ESP.restart();
+  }
+
+  String head = "--RandomNerdTutorials\r\nContent-Disposition: form-data; name=\"imageFile\"; filename=\"esp32-cam.jpg\"\r\nContent-Type: image/jpeg\r\n\r\n";
+  String tail = "\r\n--RandomNerdTutorials--\r\n";
+
+  uint32_t imageLen = fb->len;
+  uint32_t extraLen = head.length() + tail.length();
+  uint32_t totalLen = imageLen + extraLen;
+
+  _client->println("POST " + imageServerPath + " HTTP/1.1");
+  _client->println("Host: " + serverName);
+  _client->println("Content-Length: " + String(totalLen));
+  _client->println("Content-Type: multipart/form-data; boundary=RandomNerdTutorials");
+  _client->println();
+  _client->print(head);
+
+  uint8_t *fbBuf = fb->buf;
+  size_t fbLen = fb->len;
+  for (size_t n = 0; n < fbLen; n = n + 1024)
+  {
+    if (n + 1024 < fbLen)
+    {
+      _client->write(fbBuf, 1024);
+      fbBuf += 1024;
+    }
+    else if (fbLen % 1024 > 0)
+    {
+      size_t remainder = fbLen % 1024;
+      _client->write(fbBuf, remainder);
+    }
+  }
+  _client->print(tail);
+
+  esp_camera_fb_return(fb);
+
+  int timoutTimer = 5000;
+  long startTimer = millis();
+  boolean state = false;
+
+  while ((startTimer + timoutTimer) > millis())
+  {
+    Serial.print(".");
+    delay(100);
+    while (_client->available())
+    {
+      char c = _client->read();
+      if (c == '\n')
+      {
+        if (getAll.length() == 0)
+        {
+          state = true;
+        }
+        getAll = "";
+      }
+      else if (c != '\r')
+      {
+        getAll += String(c);
+      }
+      if (state == true)
+      {
+        getBody += String(c);
+      }
+      startTimer = millis();
+    }
+    if (getBody.length() > 0)
+    {
+      break;
+    }
+  }
+  Serial.println();
+  _client->stop();
+  Serial.println(getBody);
   return getBody;
 }
 
