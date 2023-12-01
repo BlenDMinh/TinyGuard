@@ -1,17 +1,14 @@
-import csv
 import torchaudio
 import torch
 from tqdm import tqdm
-from .dataset import CryDataset
-# from dataset import CryDataset
+from dataset import CryDataset
 from torch.utils.data import DataLoader
-from .model import CNNNetwork
-# from model import CNNNetwork
+from model import CNNNetwork, AlexNet
 from torch import nn
+import csv
 
 
-from .audio_utils import BATCH_SIZE, EPOCHS, LEARNING_RATE, N_MELS, SAMPLE_RATE
-# from audio_utils import BATCH_SIZE, EPOCHS, LEARNING_RATE, N_MELS, SAMPLE_RATE
+from audio_utils import NUM_CLASSES, BATCH_SIZE, EPOCHS, LEARNING_RATE, N_MELS, SAMPLE_RATE, NFFT, HOP_LEN, WIN_LEN
 
 
 def create_data_loader(train_data, batch_size):
@@ -47,13 +44,13 @@ def step(model, data_loader, loss_fn, optimiser, device, is_train=True):
         _, predicted = torch.max(prediction, 1)
         total += target.size(0)
         correct += (predicted == target).sum().item()
-        
+
         for t, p in zip(target, predicted):
             tp += (t.item() == 0 and p.item() == 0)
             fn += (t.item() == 0 and p.item() != 0)
             tn += (t.item() != 0 and p.item() != 0)
             fp += (t.item() != 0 and p.item() == 0)
-            
+
         total_loss += loss.item()
 
         loop.set_postfix(loss=loss.item(), correct=(
@@ -99,9 +96,9 @@ def train(model, train_data_loader, test_data_loader, loss_fn, optimiser, device
 
 mel_spectrogram = torchaudio.transforms.MelSpectrogram(
     sample_rate=SAMPLE_RATE,
-    n_fft=512,
-    hop_length=150,
-    win_length=400,
+    n_fft=NFFT,
+    hop_length=HOP_LEN,
+    win_length=WIN_LEN,
     n_mels=N_MELS
 )
 
@@ -120,7 +117,7 @@ if __name__ == "__main__":
     test_dataloader = create_data_loader(test_ds, BATCH_SIZE)
 
     # construct model and assign it to device
-    cnn = CNNNetwork().to(device)
+    cnn = AlexNet(num_classes=NUM_CLASSES).to(device)
     # print(cnn)
 
     # initialise loss funtion + optimiser
@@ -130,15 +127,16 @@ if __name__ == "__main__":
 
     # train model
     losses, accs, precisions, recalls, test_losses, test_accs, test_precisions, test_recalls = train(cnn, train_dataloader, test_dataloader, loss_fn,
-                                                 optimiser, device, EPOCHS)
+                                                                                                     optimiser, device, EPOCHS)
 
     # save model
     torch.save(cnn.state_dict(), "cnnnet.pth")
     print("Trained feed forward net saved at cnnnet.pth")
-    
+
     with open('history.csv', 'w') as f:
         writer = csv.writer(f, lineterminator='\r')
-        writer.writerows(zip(losses, accs, precisions, recalls, test_losses, test_accs, test_precisions, test_recalls))
+        writer.writerows(zip(losses, accs, precisions, recalls,
+                         test_losses, test_accs, test_precisions, test_recalls))
 
     with open('losses.txt', 'w') as f:
         f.write(str(losses))

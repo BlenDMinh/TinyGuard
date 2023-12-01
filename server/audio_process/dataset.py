@@ -2,7 +2,7 @@ import os
 from torch.utils.data import Dataset
 import torchaudio
 
-from .audio_utils import CLASS_MAPPING
+from audio_utils import CLASS_MAPPING
 import csv
 
 
@@ -58,12 +58,16 @@ if __name__ == "__main__":
 
     n = len(data)
 
-    train_data = data[:n//2]
-    test_data = data[n//2:]
+    train_data = data[:int(6*n/10)]
+    val_data = data[int(6*n/10):int(6*n/10)+int(3*n/10)]
+    test_data = data[int(6*n/10)+int(3*n/10):]
 
     with open('train_data.csv', 'w') as f:
         writer = csv.writer(f, lineterminator='\r')
         writer.writerows(train_data)
+    with open('val_data.csv', 'w') as f:
+        writer = csv.writer(f, lineterminator='\r')
+        writer.writerows(val_data)
     with open('test_data.csv', 'w') as f:
         writer = csv.writer(f, lineterminator='\r')
         writer.writerows(test_data)
