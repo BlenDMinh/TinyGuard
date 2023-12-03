@@ -36,8 +36,7 @@ class Routes {
       return FirstSetupScreen();
     },
     monitor: (context) {
-      String urlLink = ModalRoute.of(context)?.settings.arguments as String;
-      return MonitorScreen(urlLink: urlLink);
+      return MonitorScreen();
     }
   };
 }

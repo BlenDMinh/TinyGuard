@@ -4,6 +4,7 @@ import 'package:tinyguard/data/datasource/remote/entity/user_entity.dart';
 import 'package:tinyguard/data/datasource/remote/service/auth_api_service.dart';
 import 'package:tinyguard/data/datasource/remote/entity/auth_entity.dart';
 import 'package:tinyguard/data/repository/device_repository.dart';
+import 'package:tinyguard/service/device_background_service.dart';
 
 abstract class UserRepository {
   Future<AuthEntity> login({UserCredentials? credentials = null});
@@ -26,6 +27,7 @@ class User {
   factory User.fromEntity(UserEntity entity) {
     List<Device> devices =
         entity.devices.map((e) => Device.fromEntity(e)).toList();
+
     return User(entity.id!, entity.username!, entity.age, entity.phone_number!,
         entity.email!, entity.role, devices);
   }
@@ -45,6 +47,9 @@ class UserRepositoryImpl extends UserRepository {
     return authAPIService.login(credentials: credentials).then((authEntity) {
       if (authEntity.result?.user != null)
         this.user = User.fromEntity(authEntity.result!.user!);
+      for (var device in this.user!.devices) {
+        DeviceBackgroundService.addDevice(device);
+      }
       return authEntity;
     });
   }

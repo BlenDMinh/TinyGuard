@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
-import 'package:tinyguard/data/datasource/remote/api/api_exception.dart';
-import 'package:tinyguard/data/repository/user_repository.dart';
 import 'package:tinyguard/enums.dart';
 import 'package:tinyguard/flavor_config.dart';
 import 'package:tinyguard/locator_config.dart';
+import 'package:tinyguard/service/device_background_service.dart';
 import 'package:tinyguard/ui/views/first_setup_screen/ui/first_setup_screen.dart';
 import 'package:tinyguard/ui/views/monitor_screen/ui/monitor_screen.dart';
 import 'package:tinyguard/ui/views/login/login_screen.dart';
@@ -22,9 +21,10 @@ void main() async {
   ]);
   await setupLocator();
   FlavorConfig(
-      baseApiUrl: "http://10.10.29.217:5000",
+      baseApiUrl: "http://192.168.1.33:5000",
       flavor: Flavor.development,
       versionAPI: '/api/');
+  await DeviceBackgroundService.initialized();
   //try {
   //  await getIt.get<UserRepository>().login();
   //  runApp(const MainApp(initRoute: Routes.firstSetup));
@@ -48,10 +48,7 @@ class Routes {
       return FirstSetupScreen();
     },
     monitor: (context) {
-      String urlLink = ModalRoute.of(context)?.settings.arguments as String;
-      return MonitorScreen(
-        urlLink: urlLink,
-      );
+      return MonitorScreen();
     },
     signIn: (context) {
       return LoginScreen();

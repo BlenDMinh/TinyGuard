@@ -6,6 +6,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get_it/get_it.dart';
 import 'package:tinyguard/const/app_colors.dart';
 import 'package:tinyguard/data/repository/device_repository.dart';
+import 'package:tinyguard/flavor_config.dart';
 import 'package:tinyguard/ui/views/base/base_view.dart';
 import 'package:tinyguard/view_models/monitor_view_model.dart';
 import 'package:tinyguard/widget/bounding_box.dart';
@@ -14,9 +15,10 @@ import '../../../../service/esp32_cam.dart';
 import '../../../../widget/container.dart';
 
 class MonitorScreen extends StatefulWidget {
-  final String urlLink;
   Device? device;
-  MonitorScreen({super.key, required this.urlLink});
+  MonitorScreen({
+    super.key,
+  });
 
   @override
   State<MonitorScreen> createState() => _MonitorScreenState();
@@ -69,8 +71,13 @@ class _MonitorScreenState extends State<MonitorScreen> {
                   width: MediaQuery.of(context).size.width,
                   fit: BoxFit.fitWidth,
                   stream:
-                      'https://blog.pregistry.com/wp-content/uploads/2018/04/AdobeStock_42898239.jpeg',
+                      'https://b39eaf649798009aac305a996ef7e516.serveo.net/api/device/test/image_stream',
                   isLive: true,
+                  error: ((contet, error, stack) => ElevatedButton(
+                      onPressed: () {
+                        setState(() {});
+                      },
+                      child: Text('Reload'))),
                 ),
               ),
               if (widget.device != null)

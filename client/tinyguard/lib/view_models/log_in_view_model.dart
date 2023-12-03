@@ -1,3 +1,6 @@
+import 'dart:ffi';
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:tinyguard/data/datasource/remote/dto/user_credentials.dart';
 import 'package:tinyguard/data/datasource/remote/entity/auth_entity.dart';
@@ -22,7 +25,7 @@ class LogInViewModel extends BaseViewModel {
 
   Future<void> onLoginPressed({
     VoidCallback? onSuccess,
-    VoidCallback? onFailure,
+    Function(String)? onFailure,
   }) async {
     try {
       debugPrint(emailController.text);
@@ -36,7 +39,7 @@ class LogInViewModel extends BaseViewModel {
       onSuccessLogin(entity, onSuccess);
     } on Exception catch (error) {
       LogUtils.d('LOGIN ERROR:  $runtimeType => $error');
-      onFailure?.call();
+      onFailure?.call(error.toString());
     }
   }
 

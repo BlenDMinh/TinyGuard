@@ -94,10 +94,33 @@ class _LoginScreenState extends State<LoginScreen> {
                                       debugPrint('Login success');
 
                                       Navigator.pop(context);
-                                      Get.toNamed(Routes.firstSetup);
+                                      Get.toNamed(
+                                        Routes.monitor,
+                                      );
                                     },
-                                    onFailure: () {
-                                      Navigator.pop(context);
+                                    onFailure: (error) {
+                                      return showDialog(
+                                        context: context,
+                                        builder: ((context) => AlertDialog(
+                                              title: const Text('Error'),
+                                              content: Text(
+                                                error,
+                                              ),
+                                              actions: <Widget>[
+                                                TextButton(
+                                                  style: TextButton.styleFrom(
+                                                    textStyle: Theme.of(context)
+                                                        .textTheme
+                                                        .labelLarge,
+                                                  ),
+                                                  child: const Text('Close'),
+                                                  onPressed: () {
+                                                    Navigator.of(context).pop();
+                                                  },
+                                                ),
+                                              ],
+                                            )),
+                                      );
                                     },
                                   );
                                 },

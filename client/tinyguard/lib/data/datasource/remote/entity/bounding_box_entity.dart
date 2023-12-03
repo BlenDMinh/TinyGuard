@@ -22,7 +22,7 @@ class BoundingBoxEntity {
       w: json["w"],
       h: json["h"],
       label: json["label"],
-      confidence: json["confidence"],
+      confidence: json["confidence"].toDouble(),
     );
   }
 
