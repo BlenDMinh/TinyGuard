@@ -7,6 +7,12 @@ void setup()
   while (!Serial.available());
   serverName = Serial.readString();
   Serial.println("You entered: " + serverName);
+
+  Serial.print("Port: ");
+  while (!Serial.available());
+  serverPort = Serial.readString().toInt();
+  Serial.println("You entered: " + String(serverPort));
+  
   connectWiFi(ssid, password);
   i2sInit();
   xTaskCreate(micTask, "micTask", 10000, NULL, 1, NULL);

@@ -7,6 +7,8 @@
 #define DEFAULT_SSID "BEAN HONG COFFEE - 2.4Ghz"
 #define DEFAULT_PASSWORD "11119999"
 extern String serverName;
+extern String useSecure;
+extern int serverPort;
 void connectWifi(String ssid, String password);
 Vector<String> split(String src, char delimiter);
 void webServerInit();

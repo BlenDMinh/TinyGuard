@@ -4,7 +4,7 @@ char *ssid = "BEAN HONG COFFEE - 2.4Ghz";
 char *password = "11119999";
 String serverName = "192.168.5.22";
 String serverPath = "/api/device/audio_input";
-const int serverPort = 5000;
+int serverPort = 5000;
 WiFiClient client;
 
 #include <driver/i2s.h>
@@ -124,7 +124,7 @@ String sendAudio()
   String getAll;
   String getBody;
 
-  Serial.println("Connecting to server: " + serverName);
+  Serial.println("Connecting to server: " + serverName + ":" + String(serverPort));
 
   if (client.connect(serverName.c_str(), serverPort))
   {
