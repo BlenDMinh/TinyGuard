@@ -1,7 +1,7 @@
 import os
 from torch.utils.data import Dataset
 import torchaudio
-
+import random
 from audio_utils import CLASS_MAPPING
 import csv
 
@@ -53,14 +53,16 @@ if __name__ == "__main__":
             data.append([CLASS_MAPPING.index(_cls), os.path.join(src_dir, fn)])
             # self.annotations.append(
             #     [CLASS_MAPPING.index(_cls), os.path.join(src_dir, fn)])
-    import random
-    random.shuffle(data)
-
-    n = len(data)
-
-    train_data = data[:int(6*n/10)]
-    val_data = data[int(6*n/10):int(6*n/10)+int(3*n/10)]
-    test_data = data[int(6*n/10)+int(3*n/10):]
+    train_data = []
+    val_data = []
+    test_data = []
+    for i in range(len(CLASS_MAPPING)):
+        filtered_data = [row for row in data if row[0] == i]
+        n = len(filtered_data)
+        random.shuffle(filtered_data)
+        train_data += filtered_data[:int(7*n/10)]
+        val_data += filtered_data[int(7*n/10):int(7*n/10)+int(2*n/10)]
+        test_data += filtered_data[int(7*n/10)+int(2*n/10):]
 
     with open('train_data.csv', 'w') as f:
         writer = csv.writer(f, lineterminator='\r')
