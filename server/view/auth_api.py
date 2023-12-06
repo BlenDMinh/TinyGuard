@@ -21,14 +21,14 @@ def login():
         if response.is_error:
             return Response(
                 response=json.dumps(response.to_json()),
-                status=HTTPStatus.UNAUTHORIZED,
+                status=HTTPStatus.BAD_REQUEST,
                 headers={
                     "Content-Type": "application/json"
                 }
             )
         return Response(
             response=json.dumps(response.to_json()),
-            status=HTTPStatus.UNAUTHORIZED if response.error == "Unauthorized" else HTTPStatus.BAD_REQUEST if response.is_error else HTTPStatus.OK,
+            status=HTTPStatus.BAD_REQUEST if response.error == "Unauthorized" else HTTPStatus.BAD_REQUEST if response.is_error else HTTPStatus.OK,
             headers={
                 "Content-Type": "application/json"
             }

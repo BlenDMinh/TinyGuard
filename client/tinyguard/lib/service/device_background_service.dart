@@ -25,9 +25,28 @@ class DeviceBackgroundService {
 
   static void addDevice(Device device) {
     _devices.add(device);
-    device.image_predicts.stream.listen((event) {
-      service.invoke("onBabyCrying", {"id": device.code});
+    device.image_predicts.stream.listen((predict) {
+      if (predict.is_crying)
+        service.invoke("onBabyCrying", {"id": device.code});
     });
+  }
+
+  static void onReceiveResponse(NotificationResponse details) {
+    switch (details.notificationResponseType) {
+      case NotificationResponseType.selectedNotification:
+        break;
+
+      case NotificationResponseType.selectedNotificationAction:
+        switch (details.actionId) {
+          case 'baby_crying_confirm':
+            // Stop music
+
+            break;
+        }
+        break;
+      default:
+        break;
+    }
   }
 
   static Future<void> initialized() async {
@@ -37,6 +56,8 @@ class DeviceBackgroundService {
           iOS: DarwinInitializationSettings(),
           android: AndroidInitializationSettings('ic_bg_service_small'),
         ),
+        onDidReceiveNotificationResponse: onReceiveResponse,
+        onDidReceiveBackgroundNotificationResponse: onReceiveResponse,
       );
     }
 
@@ -79,15 +100,17 @@ class DeviceBackgroundService {
     service.on("onBabyCrying").listen((data) {
       flutterLocalNotificationsPlugin.show(
         888,
-        'TinyGuard alert service',
-        'Your baby is crying!',
+        'TinyGuard Alert',
+        'Y',
         const NotificationDetails(
           android: AndroidNotificationDetails(
-            'tinyguard_foreground',
-            'TinyGuard Foreground Service',
-            icon: 'ic_bg_service_small',
-            ongoing: true,
-          ),
+              'tinyguard_foreground', 'TinyGuard Foreground Service',
+              icon: 'ic_bg_service_small',
+              ongoing: true,
+              actions: [
+                AndroidNotificationAction("baby_crying_confirm", "Confirm",
+                    showsUserInterface: true)
+              ]),
         ),
       );
     });
