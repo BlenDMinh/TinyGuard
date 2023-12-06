@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 import 'package:tinyguard/enums.dart';
 import 'package:tinyguard/flavor_config.dart';
 import 'package:tinyguard/locator_config.dart';
+import 'package:tinyguard/service/alarm_player.dart';
 import 'package:tinyguard/service/device_background_service.dart';
 import 'package:tinyguard/ui/views/first_setup_screen/ui/first_setup_screen.dart';
 import 'package:tinyguard/ui/views/monitor_screen/ui/monitor_screen.dart';
@@ -24,6 +25,7 @@ void main() async {
       baseApiUrl: "http://192.168.5.220:5000",
       flavor: Flavor.development,
       versionAPI: '/api/');
+  await AlarmPlayer.initialize();
   await DeviceBackgroundService.initialized();
   //try {
   //  await getIt.get<UserRepository>().login();
