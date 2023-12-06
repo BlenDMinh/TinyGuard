@@ -1,6 +1,9 @@
 import 'dart:io';
+import 'dart:typed_data';
 import 'dart:ui';
 
+import 'package:audioplayers/audioplayers.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_background_service/flutter_background_service.dart';
 import 'package:flutter_background_service_android/flutter_background_service_android.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
@@ -97,7 +100,14 @@ class DeviceBackgroundService {
     //  service.setAsForegroundService();
     //}
 
-    service.on("onBabyCrying").listen((data) {
+    service.on("onBabyCrying").listen((data) async {
+      final AudioPlayer player = AudioPlayer();
+      String path = 'assets/audio/baby-would-cry.mp3';
+      ByteData bytes = await rootBundle.load(path); //load audio from assets
+      Uint8List audiobytes =
+          bytes.buffer.asUint8List(bytes.offsetInBytes, bytes.lengthInBytes);
+
+      player.play(BytesSource(audiobytes));
       flutterLocalNotificationsPlugin.show(
         888,
         'TinyGuard Alert',
