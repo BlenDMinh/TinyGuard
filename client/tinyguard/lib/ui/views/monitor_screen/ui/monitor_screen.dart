@@ -1,3 +1,4 @@
+import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -105,77 +106,82 @@ class _MonitorScreenState extends State<MonitorScreen> {
                             )
                           : const SizedBox.shrink();
                     }),
-              AnimatedPositioned(
-                top: 0,
-                left: MediaQuery.of(context).size.width / 2.3,
-                duration: Duration(milliseconds: 200),
-                child: GestureDetector(
-                  child: Container(
-                    padding: EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                    decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.8),
-                        borderRadius: BorderRadius.only(
-                            bottomLeft: Radius.circular(20),
-                            bottomRight: Radius.circular(20)),
-                        border: Border.all(width: 1, color: Colors.white)),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Container(
-                          child: Row(
-                            children: [
-                              Icon(
-                                Icons.spatial_audio_sharp,
-                                color: AppColors.lightPurple,
-                              ),
-                              if (widget.device != null)
-                                Row(
-                                  children: [
-                                    SizedBox(
-                                      width: 20.w,
-                                    ),
-                                    StreamBuilder(
-                                      stream:
-                                          widget.device!.audio_streams.stream,
-                                      builder: (context, predict) {
-                                        return predict.hasData
-                                            ? Text(
-                                                predict.data!.prediction,
-                                                style: TextStyle(
-                                                    fontSize: 18,
-                                                    color: Colors.black54,
-                                                    fontWeight:
-                                                        FontWeight.bold),
-                                              )
-                                            : const SizedBox.shrink();
-                                      },
-                                    ),
-                                  ],
-                                )
-                            ],
+              Builder(builder: (context) {
+                final isExpanded = context
+                    .select<MonitorViewModel, bool>((vm) => vm.isExpanding);
+                return AnimatedPositioned(
+                  top: isExpanded ? -100 : 0,
+                  left: MediaQuery.of(context).size.width / 2.3,
+                  duration: Duration(milliseconds: 200),
+                  child: GestureDetector(
+                    child: Container(
+                      padding:
+                          EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                      decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.8),
+                          borderRadius: BorderRadius.only(
+                              bottomLeft: Radius.circular(20),
+                              bottomRight: Radius.circular(20)),
+                          border: Border.all(width: 1, color: Colors.white)),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Container(
+                            child: Row(
+                              children: [
+                                Icon(
+                                  Icons.spatial_audio_sharp,
+                                  color: AppColors.lightPurple,
+                                ),
+                                if (widget.device != null)
+                                  Row(
+                                    children: [
+                                      SizedBox(
+                                        width: 20.w,
+                                      ),
+                                      StreamBuilder(
+                                        stream:
+                                            widget.device!.audio_streams.stream,
+                                        builder: (context, predict) {
+                                          return predict.hasData
+                                              ? Text(
+                                                  predict.data!.prediction,
+                                                  style: TextStyle(
+                                                      fontSize: 18,
+                                                      color: Colors.black54,
+                                                      fontWeight:
+                                                          FontWeight.bold),
+                                                )
+                                              : const SizedBox.shrink();
+                                        },
+                                      ),
+                                    ],
+                                  )
+                              ],
+                            ),
                           ),
-                        ),
-                        Container(
-                          height: 20,
-                          padding: EdgeInsets.symmetric(horizontal: 1),
-                          margin: EdgeInsets.symmetric(horizontal: 10),
-                          color: AppColors.lightPurple,
-                        ),
-                        Container(
-                          child: Row(
-                            children: [
-                              Icon(
-                                Icons.warning,
-                                color: AppColors.lightPurple,
-                              ),
-                            ],
+                          Container(
+                            height: 20,
+                            padding: EdgeInsets.symmetric(horizontal: 1),
+                            margin: EdgeInsets.symmetric(horizontal: 10),
+                            color: AppColors.lightPurple,
                           ),
-                        )
-                      ],
+                          Container(
+                            child: Row(
+                              children: [
+                                Icon(
+                                  Icons.warning,
+                                  color: AppColors.lightPurple,
+                                ),
+                              ],
+                            ),
+                          )
+                        ],
+                      ),
                     ),
                   ),
-                ),
-              ),
+                );
+              }),
               Builder(builder: (context) {
                 final isExpanded = context
                     .select<MonitorViewModel, bool>((vm) => vm.isExpanding);
@@ -211,8 +217,8 @@ class _MonitorScreenState extends State<MonitorScreen> {
                                   Icons.remove_red_eye,
                                   size: 30,
                                   color: isPredicting
-                                      ? AppColors.lightPurple
-                                      : Colors.deepPurpleAccent,
+                                      ? Colors.deepPurpleAccent
+                                      : AppColors.lightPurple,
                                 ),
                                 onTap: () {
                                   viewModel.setPredicting();
@@ -231,11 +237,13 @@ class _MonitorScreenState extends State<MonitorScreen> {
                             ? SizedBox.shrink()
                             : UIButtonTransparent(
                                 icon: Icon(
-                                  isMute ? Icons.volume_off : Icons.ring_volume,
+                                  isMute ? Icons.volume_off : Icons.volume_up,
                                   size: 30,
                                   color: AppColors.lightPurple,
                                 ),
-                                onTap: () {},
+                                onTap: () {
+                                  AudioPlayer(playerId: 'baby').setVolume(0);
+                                },
                               ),
                       );
                     }),
