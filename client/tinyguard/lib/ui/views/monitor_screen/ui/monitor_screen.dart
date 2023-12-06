@@ -8,6 +8,7 @@ import 'package:get_it/get_it.dart';
 import 'package:tinyguard/const/app_colors.dart';
 import 'package:tinyguard/data/repository/device_repository.dart';
 import 'package:tinyguard/flavor_config.dart';
+import 'package:tinyguard/service/device_background_service.dart';
 import 'package:tinyguard/ui/views/base/base_view.dart';
 import 'package:tinyguard/view_models/monitor_view_model.dart';
 import 'package:tinyguard/widget/bounding_box.dart';
@@ -242,7 +243,8 @@ class _MonitorScreenState extends State<MonitorScreen> {
                                   color: AppColors.lightPurple,
                                 ),
                                 onTap: () {
-                                  AudioPlayer(playerId: 'baby').setVolume(0);
+                                  DeviceBackgroundService.service
+                                      .invoke("stopWarning");
                                 },
                               ),
                       );
