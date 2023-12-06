@@ -8,7 +8,7 @@ from torch import nn
 import csv
 
 
-from audio_utils import NUM_CLASSES, BATCH_SIZE, EPOCHS, LEARNING_RATE, N_MELS, SAMPLE_RATE, NFFT, HOP_LEN, WIN_LEN
+from audio_utils import CLASS_MAPPING, NUM_CLASSES, BATCH_SIZE, EPOCHS, LEARNING_RATE, N_MELS, SAMPLE_RATE, NFFT, HOP_LEN, WIN_LEN
 
 
 def create_data_loader(train_data, batch_size):
@@ -46,10 +46,11 @@ def step(model, data_loader, loss_fn, optimiser, device, is_train=True):
         correct += (predicted == target).sum().item()
 
         for t, p in zip(target, predicted):
-            tp += (t.item() == 0 and p.item() == 0)
-            fn += (t.item() == 0 and p.item() != 0)
-            tn += (t.item() != 0 and p.item() != 0)
-            fp += (t.item() != 0 and p.item() == 0)
+            idx = CLASS_MAPPING.index("Cry")
+            tp += (t.item() == idx and p.item() == idx)
+            fn += (t.item() == idx and p.item() != idx)
+            tn += (t.item() != idx and p.item() != idx)
+            fp += (t.item() != idx and p.item() == idx)
 
         total_loss += loss.item()
 
@@ -59,8 +60,14 @@ def step(model, data_loader, loss_fn, optimiser, device, is_train=True):
     # Calculate accuracy
     accuracy = 100 * correct / total
     average_loss = total_loss / len(data_loader)
-    precision = tp / (tp + fp)
-    recall = tp / (tp + fn)
+    if tp + fp == 0:
+        precision = 0
+    else:
+        precision = tp / (tp + fp)
+    if tp + fn == 0:
+        recall = 0
+    else:
+        recall = tp / (tp + fn)
 
     print(f"Loss: {average_loss:.4f}, Accuracy: {accuracy:.2f}%, Precision: {precision:.2f}, Recall: {recall:.2f}")
     return average_loss, accuracy, precision, recall
@@ -112,7 +119,7 @@ if __name__ == "__main__":
     # instantiating our dataset object and create data loader
 
     train_ds = CryDataset(mel_spectrogram, device, csv_path='train_data.csv')
-    test_ds = CryDataset(mel_spectrogram, device, csv_path='test_data.csv')
+    test_ds = CryDataset(mel_spectrogram, device, csv_path='val_data.csv')
     train_dataloader = create_data_loader(train_ds, BATCH_SIZE)
     test_dataloader = create_data_loader(test_ds, BATCH_SIZE)
 
@@ -143,7 +150,7 @@ if __name__ == "__main__":
     with open('accuracy.txt', 'w') as f:
         f.write(str(accs))
 
-    with open('test_losses.txt', 'w') as f:
+    with open('val_losses.txt', 'w') as f:
         f.write(str(test_losses))
-    with open('test_accuracy.txt', 'w') as f:
+    with open('val_accuracy.txt', 'w') as f:
         f.write(str(test_accs))
