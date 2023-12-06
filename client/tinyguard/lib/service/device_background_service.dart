@@ -98,21 +98,23 @@ class DeviceBackgroundService {
     //}
 
     service.on("onBabyCrying").listen((data) {
-      flutterLocalNotificationsPlugin.show(
-        888,
-        'TinyGuard Alert',
-        'Y',
-        const NotificationDetails(
-          android: AndroidNotificationDetails(
-              'tinyguard_foreground', 'TinyGuard Foreground Service',
-              icon: 'ic_bg_service_small',
-              ongoing: true,
-              actions: [
-                AndroidNotificationAction("baby_crying_confirm", "Confirm",
-                    showsUserInterface: true)
-              ]),
-        ),
-      );
+      if (data != null)
+        flutterLocalNotificationsPlugin.show(
+          888,
+          'TinyGuard Alert',
+          'Your baby seems to be crying!',
+          const NotificationDetails(
+            android: AndroidNotificationDetails(
+                'tinyguard_foreground', 'TinyGuard Foreground Service',
+                icon: 'ic_bg_service_small',
+                ongoing: true,
+                actions: [
+                  AndroidNotificationAction("baby_crying_confirm", "Confirm",
+                      showsUserInterface: true)
+                ],
+                subText: "Camera with id: ${data?['id'] ?? ''}"),
+          ),
+        );
     });
   }
 }
