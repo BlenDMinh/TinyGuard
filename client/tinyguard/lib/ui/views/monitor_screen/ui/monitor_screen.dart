@@ -71,7 +71,7 @@ class _MonitorScreenState extends State<MonitorScreen> {
                   width: MediaQuery.of(context).size.width,
                   fit: BoxFit.fitWidth,
                   stream:
-                      'https://b39eaf649798009aac305a996ef7e516.serveo.net/api/device/test/image_stream',
+                      '${FlavorConfig.instance.baseURL}device/test/image_stream',
                   isLive: true,
                   error: ((contet, error, stack) => ElevatedButton(
                       onPressed: () {

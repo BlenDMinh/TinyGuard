@@ -7,6 +7,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_background_service/flutter_background_service.dart';
 import 'package:flutter_background_service_android/flutter_background_service_android.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:intl/intl.dart';
 import 'package:tinyguard/data/repository/device_repository.dart';
 import 'package:tinyguard/service/alarm_player.dart';
 
@@ -28,11 +29,45 @@ class DeviceBackgroundService {
   static final List<Device> _devices = [];
   static final List<StreamSubscription> _streams = [];
 
+  static int last = 0;
+  static bool isCameraCrying = false;
+  static bool isMicroCrying = false;
+  static const int interval = 10000;
+
   static void addDevice(Device device) {
     _devices.add(device);
     _streams.add(device.image_predicts.stream.listen((predict) {
-      if (predict.is_crying)
-        service.invoke("onBabyCrying", {"id": device.code});
+      if (isCameraCrying &&
+          DateTime.now().millisecondsSinceEpoch - last >= interval) {
+        isCameraCrying = false;
+      }
+      if (predict.is_crying && !isCameraCrying) {
+        last = DateTime.now().millisecondsSinceEpoch;
+        isCameraCrying = true;
+        service.invoke(
+          "onCameraBabyCrying",
+          {"id": device.code},
+        );
+      } else if (!predict.is_crying && isCameraCrying) {
+        isCameraCrying = false;
+      }
+    }));
+
+    _streams.add(device.audio_streams.stream.listen((predict) {
+      if (isMicroCrying &&
+          DateTime.now().millisecondsSinceEpoch - last >= interval) {
+        isMicroCrying = false;
+      }
+      if (predict.prediction == "Cry" && !isMicroCrying) {
+        last = DateTime.now().millisecondsSinceEpoch;
+        isMicroCrying = true;
+        service.invoke(
+          "onMicroBabyCrying",
+          {"id": device.code},
+        );
+      } else if (predict.prediction != "Cry" && isMicroCrying) {
+        isMicroCrying = false;
+      }
     }));
   }
 
@@ -97,7 +132,6 @@ class DeviceBackgroundService {
     );
   }
 
-  @pragma("vm:entry-point")
   static void _onStart(ServiceInstance service) {
     DartPluginRegistrant.ensureInitialized();
     //if (service is AndroidServiceInstance) {
@@ -123,7 +157,7 @@ class DeviceBackgroundService {
     //       ));
     // });
 
-    service.on("onBabyCrying").listen((data) async {
+    service.on("onCameraBabyCrying").listen((data) async {
       AlarmPlayer.play();
       final code = data?['id'] ?? '';
 
@@ -131,7 +165,33 @@ class DeviceBackgroundService {
         flutterLocalNotificationsPlugin.show(
           888,
           'TinyGuard Alert',
-          'Your baby seems to be crying!',
+          'The camera has detected that your baby is crying!\n' +
+              DateFormat("yyyy-MM-dd h:mm:ss a").format(DateTime.now()),
+          NotificationDetails(
+            android: AndroidNotificationDetails(
+              'tinyguard_foreground',
+              'TinyGuard Foreground Service',
+              icon: 'ic_bg_service_small',
+              actions: [
+                AndroidNotificationAction("baby_crying_confirm", "Confirm",
+                    showsUserInterface: true)
+              ],
+              subText: "Camera $code",
+              autoCancel: true,
+            ),
+          ),
+        );
+    });
+
+    service.on("onMicroBabyCrying").listen((data) async {
+      AlarmPlayer.play();
+      final code = data?['id'] ?? '';
+
+      if (data != null)
+        flutterLocalNotificationsPlugin.show(
+          888,
+          'TinyGuard Alert',
+          'The camera has detected that your baby is crying!',
           NotificationDetails(
             android: AndroidNotificationDetails(
                 'tinyguard_foreground', 'TinyGuard Foreground Service',
