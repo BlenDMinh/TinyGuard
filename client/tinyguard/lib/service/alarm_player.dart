@@ -4,7 +4,6 @@ import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 
-@pragma("vm:entry-point")
 class AlarmPlayer {
   static String path = 'assets/audio/baby-would-cry.mp3';
   static AudioPlayer player = AudioPlayer();

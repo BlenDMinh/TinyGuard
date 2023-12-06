@@ -9,13 +9,10 @@ import json
 # @api.route("/login", methods=["POST"])
 def login():
     try:
-        if "Authorization" in request.headers:
-            token = request.headers["Authorization"]
-            print(token)
-            login_request = LoginRequestDto.from_access_token(token)
-        else:
-            data = request.json
-            login_request = LoginRequestDto.from_json(data)
+        token = request.headers.get("Authorization")
+        data = request.json
+        login_request = LoginRequestDto.from_json(data)
+        
         response = AuthService.login(login_request)
         print(response.to_json())
         if response.is_error:
