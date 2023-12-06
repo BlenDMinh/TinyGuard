@@ -16,13 +16,16 @@ import 'package:tinyguard/widget/container.dart';
 void main() async {
   await ComponentContainer.ensureInit();
   WidgetsFlutterBinding.ensureInitialized();
-  SystemChrome.setEnabledSystemUIMode(SystemUiMode.leanBack, overlays: [
-    SystemUiOverlay.bottom,
-    SystemUiOverlay.top,
-  ]);
+  SystemChrome.setEnabledSystemUIMode(
+    SystemUiMode.leanBack,
+    overlays: [
+      SystemUiOverlay.bottom,
+      SystemUiOverlay.top,
+    ],
+  );
   await setupLocator();
   FlavorConfig(
-      baseApiUrl: "http://192.168.5.220:5000",
+      baseApiUrl: "http://192.168.5.207:5000",
       flavor: Flavor.development,
       versionAPI: '/api/');
   await AlarmPlayer.initialize();

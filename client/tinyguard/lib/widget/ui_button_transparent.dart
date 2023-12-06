@@ -3,7 +3,7 @@ import 'package:tinyguard/const/app_colors.dart';
 
 class UIButtonTransparent extends StatelessWidget {
   final VoidCallback onTap;
-  final IconData icon;
+  final Widget icon;
 
   const UIButtonTransparent({
     super.key,
@@ -22,16 +22,7 @@ class UIButtonTransparent extends StatelessWidget {
             border: Border.all(width: 1, color: Colors.white)),
         alignment: Alignment.center,
         padding: EdgeInsets.symmetric(vertical: 10, horizontal: 10),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Icon(
-              icon,
-              size: 30,
-              color: AppColors.lightPurple,
-            ),
-          ],
-        ),
+        child: icon,
       ),
     );
   }

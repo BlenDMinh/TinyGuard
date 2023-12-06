@@ -71,7 +71,7 @@ class _MonitorScreenState extends State<MonitorScreen> {
                   width: MediaQuery.of(context).size.width,
                   fit: BoxFit.fitWidth,
                   stream:
-                      'https://b39eaf649798009aac305a996ef7e516.serveo.net/api/device/test/image_stream',
+                      '${FlavorConfig.instance.baseURL}device/test/image_stream',
                   isLive: true,
                   error: ((contet, error, stack) => ElevatedButton(
                       onPressed: () {
@@ -85,7 +85,10 @@ class _MonitorScreenState extends State<MonitorScreen> {
                     stream: widget.device!.image_predicts.stream,
                     builder: (context, predict) {
                       debugPrint("Stream rebuild");
-                      return predict.hasData
+                      final isPredicting =
+                          context.select<MonitorViewModel, bool>(
+                              (vm) => vm.isPredicting);
+                      return predict.hasData && isPredicting
                           ? Stack(
                               children: predict.data!.bboxes
                                   .map(
@@ -183,38 +186,59 @@ class _MonitorScreenState extends State<MonitorScreen> {
                       left: 20.0,
                       duration: Duration(milliseconds: 200),
                       child: UIButtonTransparent(
-                        icon: isExpanded
-                            ? Icons.chevron_right
-                            : Icons.chevron_left,
+                        icon: Icon(
+                          isExpanded ? Icons.chevron_right : Icons.chevron_left,
+                          size: 30,
+                          color: AppColors.lightPurple,
+                        ),
                         onTap: () {
                           viewModel.setExpand();
                         },
                       ),
                     ),
-                    AnimatedPositioned(
-                      bottom: 20.0,
-                      left: isExpanded ? 20 : 80.0,
-                      duration: Duration(milliseconds: 200),
-                      child: isExpanded
-                          ? SizedBox.shrink()
-                          : UIButtonTransparent(
-                              icon: Icons.lock,
-                              onTap: () {
-                                viewModel.setExpand();
-                              },
-                            ),
-                    ),
-                    AnimatedPositioned(
-                      bottom: 20.0,
-                      left: isExpanded ? 20 : 140.0,
-                      duration: Duration(milliseconds: 200),
-                      child: isExpanded
-                          ? SizedBox.shrink()
-                          : UIButtonTransparent(
-                              icon: Icons.volume_off,
-                              onTap: () {},
-                            ),
-                    ),
+                    Builder(builder: (context) {
+                      final isPredicting =
+                          context.select<MonitorViewModel, bool>(
+                              (vm) => vm.isPredicting);
+                      return AnimatedPositioned(
+                        bottom: 20.0,
+                        left: isExpanded ? 20 : 80.0,
+                        duration: Duration(milliseconds: 200),
+                        child: isExpanded
+                            ? SizedBox.shrink()
+                            : UIButtonTransparent(
+                                icon: Icon(
+                                  Icons.remove_red_eye,
+                                  size: 30,
+                                  color: isPredicting
+                                      ? AppColors.lightPurple
+                                      : Colors.deepPurpleAccent,
+                                ),
+                                onTap: () {
+                                  viewModel.setPredicting();
+                                },
+                              ),
+                      );
+                    }),
+                    Builder(builder: (context) {
+                      final isMute = context
+                          .select<MonitorViewModel, bool>((vm) => vm.isMute);
+                      return AnimatedPositioned(
+                        bottom: 20.0,
+                        left: isExpanded ? 20 : 140.0,
+                        duration: Duration(milliseconds: 200),
+                        child: isExpanded
+                            ? SizedBox.shrink()
+                            : UIButtonTransparent(
+                                icon: Icon(
+                                  isMute ? Icons.volume_off : Icons.ring_volume,
+                                  size: 30,
+                                  color: AppColors.lightPurple,
+                                ),
+                                onTap: () {},
+                              ),
+                      );
+                    }),
                     AnimatedPositioned(
                       bottom: 20.0,
                       left: isExpanded ? 20 : 200.0,
@@ -222,10 +246,12 @@ class _MonitorScreenState extends State<MonitorScreen> {
                       child: isExpanded
                           ? SizedBox.shrink()
                           : UIButtonTransparent(
-                              icon: Icons.camera_outlined,
-                              onTap: () {
-                                viewModel.setExpand();
-                              },
+                              icon: Icon(
+                                Icons.camera_outlined,
+                                size: 30,
+                                color: AppColors.lightPurple,
+                              ),
+                              onTap: () {},
                             ),
                     ),
                     AnimatedPositioned(
@@ -235,10 +261,12 @@ class _MonitorScreenState extends State<MonitorScreen> {
                       child: isExpanded
                           ? SizedBox.shrink()
                           : UIButtonTransparent(
-                              icon: Icons.mic,
-                              onTap: () {
-                                viewModel.setExpand();
-                              },
+                              icon: Icon(
+                                Icons.mic,
+                                size: 30,
+                                color: AppColors.lightPurple,
+                              ),
+                              onTap: () {},
                             ),
                     ),
                   ],
