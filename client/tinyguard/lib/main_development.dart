@@ -21,7 +21,7 @@ void main() async {
   ]);
   await setupLocator();
   FlavorConfig(
-      baseApiUrl: "http://192.168.1.33:5000",
+      baseApiUrl: "http://192.168.5.220:5000",
       flavor: Flavor.development,
       versionAPI: '/api/');
   await DeviceBackgroundService.initialized();
