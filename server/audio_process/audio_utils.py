@@ -5,13 +5,11 @@ THRESHOLD = 0
 DELTA_TIME = 5
 CLASS_MAPPING = [
     "Cat",
-    "ChurchBell",
     "Cry",
     "Dog",
     "Laugh",
     "Rain",
     "Silence",
-    "WaterDrop",
     "Wind"
 ]
 BATCH_SIZE = 32

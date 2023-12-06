@@ -20,8 +20,8 @@ WiFiClient client;
 #define FLASH_RECORD_SIZE (I2S_CHANNEL_NUM * I2S_SAMPLE_RATE * I2S_SAMPLE_BITS / 8 * RECORD_TIME)
 const int headerSize = 44;
 
-#include<ESP32Servo.h>
-#include<math.h>
+#include <ESP32Servo.h>
+#include <math.h>
 #define SERVO_PIN 2
 float A = 45;
 float OFFSET = A;
@@ -43,7 +43,7 @@ void i2sInit()
       .intr_alloc_flags = 0,
       .dma_buf_count = 16,
       .dma_buf_len = 512,
-      .use_apll = 1};
+      .use_apll = 0};
 
   i2s_driver_install(I2S_PORT, &i2s_config, 0, NULL);
 
@@ -63,7 +63,7 @@ void connectWiFi(const char *ssid, const char *password)
   while (WiFi.status() != WL_CONNECTED)
   {
     delay(500);
-    if(Serial.available())
+    if (Serial.available())
       return;
     Serial.print(".");
   }
@@ -233,41 +233,40 @@ void i2s_adc_data_scale(uint8_t *d_buff, uint8_t *s_buff, uint32_t len)
   }
 }
 
-int intensityCheck() {
+int intensityCheck()
+{
 
-  int i2s_read_len = 16 * 1024;
-  char *i2s_read_buff = (char *) calloc(i2s_read_len, sizeof(char));
+  int i2s_read_len = 16000 * 0.5;
+  int16_t *i2s_read_buff = (int16_t *)calloc(i2s_read_len, sizeof(int16_t));
   size_t bytes_read;
 
-  if(i2s_read_buff == nullptr) {
-    free(i2s_read_buff);
-    i2s_read_buff = NULL;
-    return 0;
-  }
-
-  i2s_read(I2S_PORT, (void *)i2s_read_buff, i2s_read_len, &bytes_read, portMAX_DELAY);
-  if(i2s_read_buff == nullptr) {
-    free(i2s_read_buff);
-    i2s_read_buff = NULL;
-    return 0;
-  }
-
-  int peak = 0;
-
-  int16_t samples_read = bytes_read / 4;
-  if (samples_read > 0)
+  if (i2s_read_buff == nullptr)
   {
-    for (int16_t i = 0; i < samples_read; ++i)
-    {
-      if (i2s_read_buff[i]>>8 > peak)
-        peak=i2s_read_buff[i]>>8;
-    }
+    free(i2s_read_buff);
+    i2s_read_buff = NULL;
+    return 0;
+  }
+
+  i2s_read(I2S_PORT, (void *)i2s_read_buff, i2s_read_len * sizeof(int16_t), &bytes_read, portMAX_DELAY);
+  i2s_read(I2S_PORT, (void *)i2s_read_buff, i2s_read_len * sizeof(int16_t), &bytes_read, portMAX_DELAY);
+  if (i2s_read_buff == nullptr)
+  {
+    free(i2s_read_buff);
+    i2s_read_buff = NULL;
+    return 0;
+  }
+
+  float STE = 0;
+  for (size_t i = 0; i < bytes_read / sizeof(int16_t); i++)
+  {
+    int16_t value = i2s_read_buff[i];
+    STE += ((float)value / 1000) * ((float)value / 1000);
   }
 
   free(i2s_read_buff);
   i2s_read_buff = NULL;
 
-  return peak;
+  return STE;
 }
 
 void micTask(void *parameter)
@@ -279,62 +278,77 @@ void micTask(void *parameter)
   size_t bytesIn = 0;
   while (1)
   {
-    if(WiFi.status() != WL_CONNECTED)
-      continue;
-    int intensity = intensityCheck();
+    // if(WiFi.status() != WL_CONNECTED)
+    //   continue;
+    float intensity = intensityCheck();
     Serial.println(intensity);
-    continue;
+    if (intensity < 300)
+      continue;
     String result = sendAudio();
     DynamicJsonDocument doc(200);
     DeserializationError error = deserializeJson(doc, result);
-    if(error) {
+    if (error)
+    {
       Serial.println("Error decoding response");
       continue;
     }
     String label = doc["result"]["prediction"];
     Serial.println(label);
-    if(label == "Crying") {
+    if (label == "Crying")
+    {
       is_crying = true;
-    } else {
+    }
+    else
+    {
       is_crying = false;
     }
     delay(10);
   }
 }
 float angle = 0;
-void servoInit() {
+void servoInit()
+{
   pinMode(SERVO_PIN, OUTPUT);
   servo.attach(SERVO_PIN);
 }
 
-void lerpTo(float target, float weight = 0.5, float eps = 1e-3, int delay_time = 20) {
-  while(fabs(target - angle) > eps) {
+void lerpTo(float target, float weight = 0.5, float eps = 1e-3, int delay_time = 20)
+{
+  while (fabs(target - angle) > eps)
+  {
     angle = angle * weight + target * (1 - weight);
-    int servoAngle = (int) angle;
-    servo.write((int) OFFSET + servoAngle);
+    int servoAngle = (int)angle;
+    servo.write((int)OFFSET + servoAngle);
     delay(delay_time);
   }
 }
 
-void swing_step(float &angle, float &vtheta, float time_step = 0.001) {
-  float atheta = -G/L * sin(angle);
+void swing_step(float &angle, float &vtheta, float time_step = 0.001)
+{
+  float atheta = -G / L * sin(angle);
   vtheta += atheta * time_step;
   angle += vtheta * time_step;
 }
 
-void servoTask(void *parameter) {
+void servoTask(void *parameter)
+{
   servoInit();
-  while(1) {
-    if(is_crying) {
+  while (1)
+  {
+    if (is_crying)
+    {
       lerpTo(A);
       float vtheta = 0;
-      while(is_crying) {
+      while (is_crying)
+      {
         swing_step(angle, vtheta);
-        int servoAngle = (int) angle;
-        servo.write((int) OFFSET + servoAngle);
+        int servoAngle = (int)angle;
+        servo.write((int)OFFSET + servoAngle);
         delay(20);
       }
-    } else {
+    }
+    else
+    {
       lerpTo(0);
     }
     delay(10);

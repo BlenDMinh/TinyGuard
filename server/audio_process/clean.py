@@ -48,6 +48,8 @@ def split_wavs():
 
     classes = os.listdir(RAW)
     for _cls in classes:
+        # if (_cls in ['Cat', 'Dog', 'Rain', 'Wind']):
+        #     continue
         target_dir = os.path.join(CLEAN, _cls)
         check_dir(target_dir)
         src_dir = os.path.join(RAW, _cls)

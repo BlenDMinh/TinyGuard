@@ -103,12 +103,24 @@ def train(model, train_data_loader, test_data_loader, loss_fn, optimiser, device
     return losses, accs, precisions, recalls, test_losses, test_accs, test_precisions, test_recalls
 
 
-mel_spectrogram = torchaudio.transforms.MelSpectrogram(
+mel_spectrogram = torchaudio.transforms.MFCC(
     sample_rate=SAMPLE_RATE,
-    n_fft=NFFT,
-    hop_length=HOP_LEN,
-    win_length=WIN_LEN,
-    n_mels=N_MELS
+    n_mfcc=30,
+    melkwargs={'n_fft': 1024,
+               'hop_length': HOP_LEN,
+               'win_length': WIN_LEN,
+               'n_mels': N_MELS,
+               'window_fn': torch.hamming_window}
+)
+
+mel_spectrogram = torchaudio.transforms.MFCC(
+    sample_rate=SAMPLE_RATE,
+    n_mfcc=30,
+    melkwargs={'n_fft': 1024,
+               'hop_length': HOP_LEN,
+               'win_length': WIN_LEN,
+               'n_mels': N_MELS,
+               'window_fn': torch.hamming_window}
 )
 
 if __name__ == "__main__":
