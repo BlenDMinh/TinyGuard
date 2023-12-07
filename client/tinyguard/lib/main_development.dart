@@ -1,17 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
+import 'package:tinyguard/model/datasource/remote/service/alarm_player.dart';
+import 'package:tinyguard/model/datasource/remote/service/device_background_service.dart';
 import 'package:tinyguard/enums.dart';
 import 'package:tinyguard/flavor_config.dart';
 import 'package:tinyguard/locator_config.dart';
-import 'package:tinyguard/service/alarm_player.dart';
-import 'package:tinyguard/service/device_background_service.dart';
-import 'package:tinyguard/ui/views/first_setup_screen/ui/first_setup_screen.dart';
-import 'package:tinyguard/ui/views/monitor_screen/ui/monitor_screen.dart';
-import 'package:tinyguard/ui/views/login/login_screen.dart';
-import 'package:tinyguard/ui/views/register/register_view.dart';
-import 'package:tinyguard/ui/views/splash_screen/splash1_screen.dart';
-import 'package:tinyguard/widget/container.dart';
+import 'package:tinyguard/view/views/first_setup_screen/ui/first_setup_screen.dart';
+import 'package:tinyguard/view/views/monitor_screen/ui/monitor_screen.dart';
+import 'package:tinyguard/view/views/login/login_screen.dart';
+import 'package:tinyguard/view/views/register/register_view.dart';
+import 'package:tinyguard/view/views/splash_screen/splash1_screen.dart';
+import 'package:tinyguard/view/shared/widget/container.dart';
 
 void main() async {
   await ComponentContainer.ensureInit();

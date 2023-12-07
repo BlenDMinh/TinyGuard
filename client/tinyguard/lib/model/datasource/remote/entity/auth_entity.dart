@@ -1,5 +1,5 @@
-import 'package:tinyguard/data/datasource/remote/entity/base_response_entity.dart';
-import 'package:tinyguard/data/datasource/remote/entity/result_entity.dart';
+import 'package:tinyguard/model/datasource/remote/entity/base_response_entity.dart';
+import 'package:tinyguard/model/datasource/remote/entity/result_entity.dart';
 
 class AuthEntity extends BaseResponseApiEntity {
   ResultEntity? result;
@@ -12,8 +12,7 @@ class AuthEntity extends BaseResponseApiEntity {
 
   @override
   void initialValue() {
-    result = body['result'] != null
-        ? ResultEntity.fromJson(body['result'])
-        : null;
+    result =
+        body['result'] != null ? ResultEntity.fromJson(body['result']) : null;
   }
 }

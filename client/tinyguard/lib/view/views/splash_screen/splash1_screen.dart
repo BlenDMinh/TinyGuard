@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:flutter/services.dart';
 import 'package:tinyguard/main_development.dart';
-import 'package:tinyguard/ui/views/base/base_view.dart';
+import 'package:tinyguard/view/views/base/base_view.dart';
 
 class Splash1Screen extends StatefulWidget {
   Splash1Screen({super.key});

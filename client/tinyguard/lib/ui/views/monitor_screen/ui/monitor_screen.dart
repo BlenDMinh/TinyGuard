@@ -6,15 +6,15 @@ import 'package:flutter_mjpeg/flutter_mjpeg.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get_it/get_it.dart';
 import 'package:tinyguard/const/app_colors.dart';
-import 'package:tinyguard/data/repository/device_repository.dart';
+import 'package:tinyguard/model/repository/device_repository.dart';
 import 'package:tinyguard/flavor_config.dart';
 import 'package:tinyguard/service/device_background_service.dart';
-import 'package:tinyguard/ui/views/base/base_view.dart';
+import 'package:tinyguard/view/views/base/base_view.dart';
 import 'package:tinyguard/view_models/monitor_view_model.dart';
-import 'package:tinyguard/widget/bounding_box.dart';
-import 'package:tinyguard/widget/ui_button_transparent.dart';
+import 'package:tinyguard/view/shared/widget/bounding_box.dart';
+import 'package:tinyguard/view/shared/widget/ui_button_transparent.dart';
 import '../../../../service/esp32_cam.dart';
-import '../../../../widget/container.dart';
+import '../../../../view/shared/widget/container.dart';
 
 class MonitorScreen extends StatefulWidget {
   Device? device;
@@ -62,20 +62,6 @@ class _MonitorScreenState extends State<MonitorScreen> {
     @override
     final videoService =
         ComponentContainer().get(Component.esp32Camera) as Esp32Camera;
-    final mjpeg = Container(
-      key: mywidgetkey,
-      child: Mjpeg(
-        height: MediaQuery.of(context).size.height,
-        fit: BoxFit.fitHeight,
-        stream: '${FlavorConfig.instance.baseURL}device/test/image_stream',
-        isLive: true,
-        error: ((contet, error, stack) => ElevatedButton(
-            onPressed: () {
-              setState(() {});
-            },
-            child: Text('Reload'))),
-      ),
-    );
 
     return BaseView(
       viewModel: viewModel,
@@ -87,7 +73,20 @@ class _MonitorScreenState extends State<MonitorScreen> {
             children: [
               Container(
                 alignment: Alignment.center,
-                child: mjpeg,
+                key: mywidgetkey,
+                child: Mjpeg(
+                  loading: (context) => CircularProgressIndicator(),
+                  height: MediaQuery.of(context).size.height,
+                  fit: BoxFit.fitHeight,
+                  stream:
+                      '${FlavorConfig.instance.baseURL}device/test/image_stream',
+                  isLive: true,
+                  error: ((contet, error, stack) => ElevatedButton(
+                      onPressed: () {
+                        setState(() {});
+                      },
+                      child: Text('Reload'))),
+                ),
               ),
               if (widget.device != null)
                 StreamBuilder(
@@ -108,31 +107,24 @@ class _MonitorScreenState extends State<MonitorScreen> {
                             renderbox.size.height.toString());
                       }
 
+                      var w = renderbox?.size.width;
+                      var h = renderbox?.size.height;
+                      var sw = MediaQuery.of(context).size.width;
+                      var sh = MediaQuery.of(context).size.height;
+
+                      print("$w $h $sw $sh");
+
                       return predict.hasData && isPredicting
                           ? Stack(
                               children: predict.data!.bboxes
                                   .map(
                                     (box) => BoundingBox(
-                                      x: box.x *
-                                          (renderbox?.size.width ??
-                                              MediaQuery.of(context)
-                                                  .size
-                                                  .height),
-                                      y: box.y *
-                                          (renderbox?.size.height ??
-                                              MediaQuery.of(context)
-                                                  .size
-                                                  .width),
-                                      width: box.w *
-                                          (renderbox?.size.width ??
-                                              MediaQuery.of(context)
-                                                  .size
-                                                  .height),
-                                      height: box.h *
-                                          (renderbox?.size.height ??
-                                              MediaQuery.of(context)
-                                                  .size
-                                                  .width),
+                                      x: box.x * (w != null ? w : sh) +
+                                          (w != null ? (sw - w) / 2 : 0),
+                                      y: box.y * (h != null ? h : sw) +
+                                          (h != null ? (sh - h) / 2 : 0),
+                                      width: box.w * (w ?? sw),
+                                      height: box.h * (h ?? sh),
                                       isCrying: box.label == 0,
                                       confidence: box.confidence,
                                     ),

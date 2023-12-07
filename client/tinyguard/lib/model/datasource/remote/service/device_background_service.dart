@@ -8,10 +8,10 @@ import 'package:flutter_background_service/flutter_background_service.dart';
 import 'package:flutter_background_service_android/flutter_background_service_android.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:intl/intl.dart';
-import 'package:tinyguard/data/datasource/remote/entity/audio_predict_entity.dart';
-import 'package:tinyguard/data/datasource/remote/entity/image_predict_entity.dart';
-import 'package:tinyguard/data/repository/device_repository.dart';
-import 'package:tinyguard/service/alarm_player.dart';
+import 'package:tinyguard/model/datasource/remote/entity/audio_predict_entity.dart';
+import 'package:tinyguard/model/datasource/remote/entity/image_predict_entity.dart';
+import 'package:tinyguard/model/datasource/remote/service/alarm_player.dart';
+import 'package:tinyguard/model/repository/device_repository.dart';
 
 // @pragma("vm:entry-point")
 class DeviceBackgroundService {

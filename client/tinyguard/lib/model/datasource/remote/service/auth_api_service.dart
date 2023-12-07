@@ -2,13 +2,13 @@ import 'dart:convert';
 
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
-import 'package:tinyguard/data/datasource/remote/api/api_client.dart';
-import 'package:tinyguard/data/datasource/remote/dto/user_credentials.dart';
-import 'package:tinyguard/data/datasource/remote/dto/user_register_credentials.dart';
-import 'package:tinyguard/data/datasource/remote/dto/user_reset_password_credentials.dart';
-import 'package:tinyguard/data/datasource/remote/entity/auth_entity.dart';
-import 'package:tinyguard/data/datasource/remote/entity/reset_password_entity.dart';
-import 'package:tinyguard/data/datasource/remote/entity/user_entity.dart';
+import 'package:tinyguard/model/datasource/remote/api/api_client.dart';
+import 'package:tinyguard/model/datasource/remote/dto/user_credentials.dart';
+import 'package:tinyguard/model/datasource/remote/dto/user_register_credentials.dart';
+import 'package:tinyguard/model/datasource/remote/dto/user_reset_password_credentials.dart';
+import 'package:tinyguard/model/datasource/remote/entity/auth_entity.dart';
+import 'package:tinyguard/model/datasource/remote/entity/reset_password_entity.dart';
+import 'package:tinyguard/model/datasource/remote/entity/user_entity.dart';
 
 enum AuthRoute {
   login('user/login'),

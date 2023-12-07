@@ -27,16 +27,6 @@ class BoundingBox extends StatelessWidget {
       child: Column(
         children: [
           Container(
-            padding: EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-            decoration:
-                BoxDecoration(color: isCrying ? Colors.red : Colors.green),
-            child: Text(
-              'Confidence: ${(confidence * 100).ceil()}%',
-              style:
-                  TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-            ),
-          ),
-          Container(
             height: height,
             width: width,
             decoration: BoxDecoration(
@@ -45,17 +35,35 @@ class BoundingBox extends StatelessWidget {
                 color: isCrying ? Colors.red : Colors.green,
               ),
             ),
-          ),
-          Container(
-            padding: EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-            decoration:
-                BoxDecoration(color: isCrying ? Colors.red : Colors.green),
-            child: Text(
-              isCrying ? 'Your baby is crying' : "Your baby is fine",
-              style:
-                  TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Container(
+                  width: double.infinity,
+                  alignment: Alignment.center,
+                  padding: EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                  decoration: BoxDecoration(
+                      color: isCrying ? Colors.red : Colors.green),
+                  child: Text(
+                    'Confidence: ${(confidence * 100).ceil()}%',
+                    style: TextStyle(
+                        color: Colors.white, fontWeight: FontWeight.bold),
+                  ),
+                ),
+                Container(
+                  width: double.infinity,
+                  alignment: Alignment.center,
+                  decoration: BoxDecoration(
+                      color: isCrying ? Colors.red : Colors.green),
+                  child: Text(
+                    isCrying ? 'Your baby is crying' : "Your baby is fine",
+                    style: TextStyle(
+                        color: Colors.white, fontWeight: FontWeight.bold),
+                  ),
+                ),
+              ],
             ),
-          )
+          ),
         ],
       ),
     );

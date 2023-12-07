@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get_it/get_it.dart';
 import 'package:tinyguard/main_development.dart';
-import 'package:tinyguard/ui/shared/already_have_an_account_acheck.dart';
-import 'package:tinyguard/ui/shared/background.dart';
-import 'package:tinyguard/ui/views/base/base_view.dart';
-import 'package:tinyguard/ui/views/base/responsive.dart';
+import 'package:tinyguard/view/shared/already_have_an_account_acheck.dart';
+import 'package:tinyguard/view/shared/background.dart';
+import 'package:tinyguard/view/views/base/base_view.dart';
+import 'package:tinyguard/view/views/base/responsive.dart';
 import 'package:tinyguard/view_models/log_in_view_model.dart';
 import 'components/login_screen_top_image.dart';
 

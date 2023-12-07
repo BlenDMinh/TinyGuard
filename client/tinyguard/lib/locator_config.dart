@@ -1,8 +1,8 @@
 import 'package:get_it/get_it.dart';
-import 'package:tinyguard/data/datasource/remote/api/api_client.dart';
-import 'package:tinyguard/data/datasource/remote/service/auth_api_service.dart';
-import 'package:tinyguard/data/repository/user_repository.dart';
-import 'package:tinyguard/data/shared_preferences/spref_auth_model.dart';
+import 'package:tinyguard/model/datasource/remote/api/api_client.dart';
+import 'package:tinyguard/model/datasource/remote/service/auth_api_service.dart';
+import 'package:tinyguard/model/repository/user_repository.dart';
+import 'package:tinyguard/model/shared_preferences/spref_auth_model.dart';
 import 'package:tinyguard/view_models/log_in_view_model.dart';
 import 'package:tinyguard/view_models/monitor_view_model.dart';
 import 'package:tinyguard/view_models/register_view_model.dart';

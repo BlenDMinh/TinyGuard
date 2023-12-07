@@ -1,4 +1,4 @@
-import 'package:tinyguard/data/shared/constants.dart';
+import 'package:tinyguard/model/shared/constants.dart';
 
 class ValidationUtils {
   ValidationUtils._();

@@ -1,4 +1,4 @@
-import 'package:tinyguard/data/shared_preferences/spref_base_model.dart';
+import 'package:tinyguard/model/shared_preferences/spref_base_model.dart';
 
 class SPrefAuthModel extends SPrefBaseModel {
   static const String kAccessToken = 'KEY_ACCESS_TOKEN';

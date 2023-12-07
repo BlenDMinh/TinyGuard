@@ -1,5 +1,5 @@
-import 'package:tinyguard/data/datasource/remote/entity/base_response_entity.dart';
-import 'package:tinyguard/data/datasource/remote/entity/user_entity.dart';
+import 'package:tinyguard/model/datasource/remote/entity/base_response_entity.dart';
+import 'package:tinyguard/model/datasource/remote/entity/user_entity.dart';
 
 class RegisterEntity extends BaseResponseApiEntity {
   UserEntity? user;

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:tinyguard/ui/shared/ui_constant.dart';
+import 'package:tinyguard/view/shared/ui_constant.dart';
 
 class Responsive extends StatelessWidget {
   const Responsive({

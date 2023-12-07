@@ -6,15 +6,14 @@ import 'package:flutter_mjpeg/flutter_mjpeg.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get_it/get_it.dart';
 import 'package:tinyguard/const/app_colors.dart';
-import 'package:tinyguard/data/repository/device_repository.dart';
+import 'package:tinyguard/model/datasource/remote/service/esp32_cam.dart';
+import 'package:tinyguard/model/repository/device_repository.dart';
 import 'package:tinyguard/flavor_config.dart';
-import 'package:tinyguard/service/device_background_service.dart';
-import 'package:tinyguard/ui/views/base/base_view.dart';
+import 'package:tinyguard/view/views/base/base_view.dart';
 import 'package:tinyguard/view_models/monitor_view_model.dart';
-import 'package:tinyguard/widget/bounding_box.dart';
-import 'package:tinyguard/widget/ui_button_transparent.dart';
-import '../../../../service/esp32_cam.dart';
-import '../../../../widget/container.dart';
+import 'package:tinyguard/view/shared/widget/bounding_box.dart';
+import 'package:tinyguard/view/shared/widget/ui_button_transparent.dart';
+import '../../../shared/widget/container.dart';
 
 class MonitorScreen extends StatefulWidget {
   Device? device;
@@ -187,22 +186,6 @@ class _MonitorScreenState extends State<MonitorScreen> {
                               ],
                             ),
                           ),
-                          Container(
-                            height: 20,
-                            padding: EdgeInsets.symmetric(horizontal: 1),
-                            margin: EdgeInsets.symmetric(horizontal: 10),
-                            color: AppColors.lightPurple,
-                          ),
-                          Container(
-                            child: Row(
-                              children: [
-                                Icon(
-                                  Icons.warning,
-                                  color: AppColors.lightPurple,
-                                ),
-                              ],
-                            ),
-                          )
                         ],
                       ),
                     ),
@@ -254,8 +237,6 @@ class _MonitorScreenState extends State<MonitorScreen> {
                       );
                     }),
                     Builder(builder: (context) {
-                      final isMute = context
-                          .select<MonitorViewModel, bool>((vm) => vm.isMute);
                       return AnimatedPositioned(
                         bottom: 20.0,
                         left: isExpanded ? 20 : 140.0,
@@ -264,51 +245,39 @@ class _MonitorScreenState extends State<MonitorScreen> {
                             ? SizedBox.shrink()
                             : UIButtonTransparent(
                                 icon: Icon(
-                                  isMute ? Icons.volume_off : Icons.volume_up,
+                                  Icons.pause,
                                   size: 30,
-                                  color: AppColors.lightPurple,
+                                  color: Colors.deepPurpleAccent,
                                 ),
                                 onTap: () {
-                                  RenderBox renderbox = mywidgetkey
-                                      .currentContext!
-                                      .findRenderObject() as RenderBox;
-                                  debugPrint(renderbox.size.width.toString() +
-                                      ", " +
-                                      renderbox.size.height.toString());
+                                  viewModel.stopWarning();
                                 },
                               ),
                       );
                     }),
-                    AnimatedPositioned(
-                      bottom: 20.0,
-                      left: isExpanded ? 20 : 200.0,
-                      duration: Duration(milliseconds: 200),
-                      child: isExpanded
-                          ? SizedBox.shrink()
-                          : UIButtonTransparent(
-                              icon: Icon(
-                                Icons.camera_outlined,
-                                size: 30,
-                                color: AppColors.lightPurple,
+                    Builder(builder: (context) {
+                      final isMute = context
+                          .select<MonitorViewModel, bool>((vm) => vm.isMute);
+                      return AnimatedPositioned(
+                        top: isExpanded ? 200 : 320,
+                        right: 20,
+                        duration: Duration(milliseconds: 200),
+                        child: isExpanded
+                            ? SizedBox.shrink()
+                            : UIButtonTransparent(
+                                icon: Icon(
+                                  isMute ? Icons.volume_off : Icons.volume_up,
+                                  size: 30,
+                                  color: isMute
+                                      ? AppColors.lightPurple
+                                      : Colors.deepPurpleAccent,
+                                ),
+                                onTap: () {
+                                  viewModel.setMute();
+                                },
                               ),
-                              onTap: () {},
-                            ),
-                    ),
-                    AnimatedPositioned(
-                      top: isExpanded ? 200 : 320,
-                      right: 20,
-                      duration: Duration(milliseconds: 200),
-                      child: isExpanded
-                          ? SizedBox.shrink()
-                          : UIButtonTransparent(
-                              icon: Icon(
-                                Icons.mic,
-                                size: 30,
-                                color: AppColors.lightPurple,
-                              ),
-                              onTap: () {},
-                            ),
-                    ),
+                      );
+                    }),
                   ],
                 );
               })

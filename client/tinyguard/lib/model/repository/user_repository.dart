@@ -1,10 +1,10 @@
-import 'package:tinyguard/data/datasource/remote/dto/user_credentials.dart';
-import 'package:tinyguard/data/datasource/remote/dto/user_register_credentials.dart';
-import 'package:tinyguard/data/datasource/remote/entity/user_entity.dart';
-import 'package:tinyguard/data/datasource/remote/service/auth_api_service.dart';
-import 'package:tinyguard/data/datasource/remote/entity/auth_entity.dart';
-import 'package:tinyguard/data/datasource/remote/service/device_background_service.dart';
-import 'package:tinyguard/data/repository/device_repository.dart';
+import 'package:tinyguard/model/datasource/remote/dto/user_credentials.dart';
+import 'package:tinyguard/model/datasource/remote/dto/user_register_credentials.dart';
+import 'package:tinyguard/model/datasource/remote/entity/user_entity.dart';
+import 'package:tinyguard/model/datasource/remote/service/auth_api_service.dart';
+import 'package:tinyguard/model/datasource/remote/entity/auth_entity.dart';
+import 'package:tinyguard/model/datasource/remote/service/device_background_service.dart';
+import 'package:tinyguard/model/repository/device_repository.dart';
 
 abstract class UserRepository {
   Future<AuthEntity> login({UserCredentials? credentials = null});

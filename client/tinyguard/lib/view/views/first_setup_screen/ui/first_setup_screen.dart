@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
-import 'package:tinyguard/ui/views/base/base_view.dart';
-import 'package:tinyguard/widget/app_text_field.dart';
-import 'package:tinyguard/widget/ui_header.dart';
+import 'package:tinyguard/view/views/base/base_view.dart';
+import 'package:tinyguard/view/shared/widget/app_text_field.dart';
+import 'package:tinyguard/view/shared/widget/ui_header.dart';
 import '../../../../main_development.dart';
 
 class FirstSetupScreen extends StatefulWidget {

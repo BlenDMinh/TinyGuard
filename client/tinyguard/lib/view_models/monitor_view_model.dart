@@ -1,10 +1,9 @@
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
-import 'package:tinyguard/data/repository/user_repository.dart';
-import 'package:tinyguard/service/alarm_player.dart';
-import 'package:tinyguard/service/device_background_service.dart';
+import 'package:tinyguard/model/datasource/remote/service/device_background_service.dart';
+import 'package:tinyguard/model/repository/user_repository.dart';
 import 'package:tinyguard/view_models/base_view_model.dart';
-import 'package:tinyguard/widget/bounding_box.dart';
+import 'package:tinyguard/view/shared/widget/bounding_box.dart';
 
 class MonitorViewModel extends BaseViewModel {
   final UserRepository userRepository;
@@ -14,7 +13,7 @@ class MonitorViewModel extends BaseViewModel {
 
   bool isExpanding = false;
 
-  bool isPredicting = false;
+  bool isPredicting = true;
 
   bool isMute = false;
 

@@ -1,10 +1,10 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:tinyguard/data/datasource/remote/entity/audio_predict_entity.dart';
-import 'package:tinyguard/data/datasource/remote/entity/device_entity.dart';
+import 'package:tinyguard/model/datasource/remote/entity/audio_predict_entity.dart';
+import 'package:tinyguard/model/datasource/remote/entity/device_entity.dart';
 import 'package:socket_io_client/socket_io_client.dart' as IO;
-import 'package:tinyguard/data/datasource/remote/entity/image_predict_entity.dart';
+import 'package:tinyguard/model/datasource/remote/entity/image_predict_entity.dart';
 import 'package:tinyguard/flavor_config.dart';
 import 'dart:io';
 import 'dart:ui';

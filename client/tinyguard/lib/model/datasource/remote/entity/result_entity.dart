@@ -1,4 +1,4 @@
-import 'package:tinyguard/data/datasource/remote/entity/user_entity.dart';
+import 'package:tinyguard/model/datasource/remote/entity/user_entity.dart';
 
 class ResultEntity {
   final String? accessToken;
@@ -11,7 +11,8 @@ class ResultEntity {
     return ResultEntity(
         accessToken: json['access_token'] as String?,
         refreshToken: json['refresh_token'] as String?,
-        user: json['user'] != null ? UserEntity.fromJson(json['user'] as Map<String, dynamic>) : null
-      );
+        user: json['user'] != null
+            ? UserEntity.fromJson(json['user'] as Map<String, dynamic>)
+            : null);
   }
 }

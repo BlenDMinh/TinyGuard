@@ -1,4 +1,4 @@
-import 'package:tinyguard/data/datasource/remote/entity/bounding_box_entity.dart';
+import 'package:tinyguard/model/datasource/remote/entity/bounding_box_entity.dart';
 
 class ImagePredict {
   final List<BoundingBoxEntity> bboxes;

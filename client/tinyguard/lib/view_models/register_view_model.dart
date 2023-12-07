@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:tinyguard/data/datasource/remote/dto/user_register_credentials.dart';
-import 'package:tinyguard/data/repository/user_repository.dart';
+import 'package:tinyguard/model/datasource/remote/dto/user_register_credentials.dart';
+import 'package:tinyguard/model/repository/user_repository.dart';
 import 'package:tinyguard/utils/log_utils.dart';
 import 'package:tinyguard/view_models/base_view_model.dart';
 
