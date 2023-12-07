@@ -18,6 +18,11 @@ void setup()
   useSecure = Serial.readString();
   Serial.println("You entered: " + useSecure);
 
+  Serial.print("Port: ");
+  while (!Serial.available());
+  serverPort = Serial.readString().toInt();
+  Serial.println("You entered: " + String(serverPort));
+
   serialInit();
   webServerInit();
 }
