@@ -157,7 +157,7 @@ class _MonitorScreenState extends State<MonitorScreen> {
                               children: [
                                 Icon(
                                   Icons.spatial_audio_sharp,
-                                  color: AppColors.lightPurple,
+                                  color: Colors.deepPurpleAccent,
                                 ),
                                 if (widget.device != null)
                                   Row(
