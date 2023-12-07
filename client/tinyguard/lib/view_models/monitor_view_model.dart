@@ -1,6 +1,8 @@
+import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
 import 'package:tinyguard/data/repository/user_repository.dart';
 import 'package:tinyguard/service/alarm_player.dart';
+import 'package:tinyguard/service/device_background_service.dart';
 import 'package:tinyguard/view_models/base_view_model.dart';
 import 'package:tinyguard/widget/bounding_box.dart';
 
@@ -29,10 +31,17 @@ class MonitorViewModel extends BaseViewModel {
 
   void setMute() {
     if (isMute == true) {
-      AlarmPlayer.setVolume(0);
+      isMute = false;
+      DeviceBackgroundService.service.invoke("unmute");
     } else {
-      AlarmPlayer.setVolume(0.8);
+      isMute = true;
+      DeviceBackgroundService.service.invoke("mute");
     }
+    updateUI();
+  }
+
+  void stopWarning() {
+    DeviceBackgroundService.service.invoke("stopWarning");
     updateUI();
   }
 

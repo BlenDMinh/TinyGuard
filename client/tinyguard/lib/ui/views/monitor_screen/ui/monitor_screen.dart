@@ -57,11 +57,29 @@ class _MonitorScreenState extends State<MonitorScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final mywidgetkey = GlobalKey();
+
     @override
     final videoService =
         ComponentContainer().get(Component.esp32Camera) as Esp32Camera;
+    final mjpeg = Container(
+      key: mywidgetkey,
+      child: Mjpeg(
+        height: MediaQuery.of(context).size.height,
+        fit: BoxFit.fitHeight,
+        stream: '${FlavorConfig.instance.baseURL}device/test/image_stream',
+        isLive: true,
+        error: ((contet, error, stack) => ElevatedButton(
+            onPressed: () {
+              setState(() {});
+            },
+            child: Text('Reload'))),
+      ),
+    );
+
     return BaseView(
       viewModel: viewModel,
+      backgroundColor: Colors.black,
       mobileBuilder: (context) {
         return GestureDetector(
           onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
@@ -69,18 +87,7 @@ class _MonitorScreenState extends State<MonitorScreen> {
             children: [
               Container(
                 alignment: Alignment.center,
-                child: Mjpeg(
-                  width: MediaQuery.of(context).size.width,
-                  fit: BoxFit.fitWidth,
-                  stream:
-                      '${FlavorConfig.instance.baseURL}device/test/image_stream',
-                  isLive: true,
-                  error: ((contet, error, stack) => ElevatedButton(
-                      onPressed: () {
-                        setState(() {});
-                      },
-                      child: Text('Reload'))),
-                ),
+                child: mjpeg,
               ),
               if (widget.device != null)
                 StreamBuilder(
@@ -90,15 +97,42 @@ class _MonitorScreenState extends State<MonitorScreen> {
                       final isPredicting =
                           context.select<MonitorViewModel, bool>(
                               (vm) => vm.isPredicting);
+
+                      RenderBox? renderbox;
+
+                      if (predict.hasData) {
+                        renderbox = mywidgetkey.currentContext!
+                            .findRenderObject() as RenderBox;
+                        debugPrint(renderbox.size.width.toString() +
+                            ", " +
+                            renderbox.size.height.toString());
+                      }
+
                       return predict.hasData && isPredicting
                           ? Stack(
                               children: predict.data!.bboxes
                                   .map(
                                     (box) => BoundingBox(
-                                      x: box.x,
-                                      y: box.y,
-                                      height: box.h,
-                                      width: box.w,
+                                      x: box.x *
+                                          (renderbox?.size.width ??
+                                              MediaQuery.of(context)
+                                                  .size
+                                                  .height),
+                                      y: box.y *
+                                          (renderbox?.size.height ??
+                                              MediaQuery.of(context)
+                                                  .size
+                                                  .width),
+                                      width: box.w *
+                                          (renderbox?.size.width ??
+                                              MediaQuery.of(context)
+                                                  .size
+                                                  .height),
+                                      height: box.h *
+                                          (renderbox?.size.height ??
+                                              MediaQuery.of(context)
+                                                  .size
+                                                  .width),
                                       isCrying: box.label == 0,
                                       confidence: box.confidence,
                                     ),
@@ -243,8 +277,12 @@ class _MonitorScreenState extends State<MonitorScreen> {
                                   color: AppColors.lightPurple,
                                 ),
                                 onTap: () {
-                                  DeviceBackgroundService.service
-                                      .invoke("stopWarning");
+                                  RenderBox renderbox = mywidgetkey
+                                      .currentContext!
+                                      .findRenderObject() as RenderBox;
+                                  debugPrint(renderbox.size.width.toString() +
+                                      ", " +
+                                      renderbox.size.height.toString());
                                 },
                               ),
                       );

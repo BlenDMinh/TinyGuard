@@ -20,14 +20,11 @@ class BoundingBox extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    debugPrint("X: ${x}, Y: ${y}");
-    debugPrint(
-        "screen height: ${MediaQuery.of(context).size.height} screen width: ${MediaQuery.of(context).size.width}");
+    debugPrint(height.toString() + ", " + width.toString());
+    debugPrint(y.toString() + ", " + x.toString());
     return Transform(
-      transform: Matrix4.translationValues(
-          (y - height / 2) * MediaQuery.of(context).size.width,
-          (x - width / 2) * MediaQuery.of(context).size.height,
-          0.0),
+      transform:
+          Matrix4.translationValues((y - height / 2), (x - width / 2), 0.0),
       child: Column(
         children: [
           Container(
@@ -41,8 +38,8 @@ class BoundingBox extends StatelessWidget {
             ),
           ),
           Container(
-            height: height * MediaQuery.of(context).size.height,
-            width: width * MediaQuery.of(context).size.width,
+            height: height,
+            width: width,
             decoration: BoxDecoration(
               border: Border.all(
                 width: 5,

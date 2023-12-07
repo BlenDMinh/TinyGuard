@@ -25,7 +25,8 @@ void main() async {
   );
   await setupLocator();
   FlavorConfig(
-      baseApiUrl: "http://192.168.5.207:5000",
+      baseApiUrl:
+          "http://0519-2405-4802-95f0-a4-5164-a05b-aac7-3d62.ngrok-free.app",
       flavor: Flavor.development,
       versionAPI: '/api/');
   await AlarmPlayer.initialize();
