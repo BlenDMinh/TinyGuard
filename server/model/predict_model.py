@@ -1,9 +1,8 @@
 import torchaudio
 import torch
 import json
-# from audio_process.audio_utils import DELTA_TIME, SAMPLE_RATE
 from entity.device import Device
-# from audio_process.predict import predict_one
+from baby_audio import predict_one, DELTA_TIME, SAMPLE_RATE
 
 
 class BoundingBox:

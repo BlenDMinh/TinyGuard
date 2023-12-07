@@ -1,3 +1,4 @@
+import os
 import cv2
 import numpy as np
 from .yolo3_utils import cells_to_bboxes, non_max_suppression, plot_image
@@ -12,7 +13,8 @@ import albumentations as A
 from albumentations.pytorch import ToTensorV2
 
 model = YOLOv3(num_classes=config.CLASS_NUM).to(config.DEVICE)
-checkpoint = torch.load('./baby_recognizer/model/checkpoint.pth.tar',
+checkpoint = torch.load(os.path.join(os.path.dirname(
+        __file__), 'checkpoint.pth.tar'),
                         map_location=config.DEVICE)
 # checkpoint = torch.load('./model/checkpoint.pth.tar',
                         # map_location=config.DEVICE)
@@ -31,10 +33,10 @@ transforms = A.Compose(
     ],
 )
 # image = transforms(image=image)['image']
-# anchors = (
-#     torch.tensor(config.ANCHORS)
-#     * torch.tensor(config.STRIDE).unsqueeze(1).unsqueeze(1).repeat(1, 3, 2)
-# ).to(config.DEVICE)
+anchors = (
+    torch.tensor(config.ANCHORS)
+    * torch.tensor(config.STRIDE).unsqueeze(1).unsqueeze(1).repeat(1, 3, 2)
+).to(config.DEVICE)
 # with torch.no_grad():
 #     out = model(image.unsqueeze(0).to(config.DEVICE))
 #     bboxes = [[] for _ in range(image.shape[0])]
@@ -78,7 +80,7 @@ frame_step = 1
 def plot_video(nums_of_baby=1):
     image_counter = 0
     read_counter = 0
-    src = cv2.VideoCapture('./dataset/test/video2.mp4')
+    src = cv2.VideoCapture('./dataset/test/video.mp4')
     while src.isOpened():
         ret, img = src.read()
         if ret and read_counter % frame_step == 0:
@@ -115,7 +117,7 @@ def plot_video(nums_of_baby=1):
     src.release()
 
 
-# plot_video()
+plot_video()
 
 def reverse_transform(image, box):
     h = image.shape[0]

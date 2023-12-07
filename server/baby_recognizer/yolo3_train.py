@@ -1,12 +1,16 @@
-from .yolov3_dataset import BabyDataset
+from yolov3_dataset import BabyDataset
+# from .yolov3_dataset import BabyDataset
 from torch.utils.data import DataLoader
-from . import yolov3_config as config
+# from . import yolov3_config as 
+import yolov3_config as config
 import torch
 import torch.optim as optim
 
-from .yolov3_model import YOLOv3
+# from .yolov3_model import YOLOv3
+from yolov3_model import YOLOv3
 from tqdm import tqdm
-from .yolo3_utils import (
+# from .yolo3_utils import (
+from yolo3_utils import (
     mean_average_precision,
     cells_to_bboxes,
     get_evaluation_bboxes,
@@ -16,7 +20,8 @@ from .yolo3_utils import (
     get_loaders,
     plot_couple_examples
 )
-from .yolov3_loss import YoloLoss
+# from .yolov3_loss import YoloLoss
+from yolov3_loss import YoloLoss
 import warnings
 warnings.filterwarnings("ignore")
 
@@ -124,6 +129,7 @@ def main():
     history = []
 
     for epoch in range(config.NUM_EPOCHS):
+        print(f"Currently epoch {epoch}")
         # plot_couple_examples(model, val_loader, 0.6, 0.5, scaled_anchors)
         loss = train_fn(train_loader, model, optimizer,
                         loss_fn, scaler, scaled_anchors)
@@ -133,29 +139,43 @@ def main():
         if config.SAVE_MODEL and epoch % 10 == 0:
             save_checkpoint(model, optimizer, filename=f"checkpoint.pth.tar")
 
-        print(f"Currently epoch {epoch}")
-
-        train_acc = check_class_accuracy(model, train_loader,
-                                         threshold=config.CONF_THRESHOLD)
-        test_acc = check_class_accuracy(model, val_loader,
-                                        threshold=config.CONF_THRESHOLD)
-        pred_boxes, true_boxes = get_evaluation_bboxes(
+        # train_acc = check_class_accuracy(model, train_loader,
+        #                                  threshold=config.CONF_THRESHOLD)
+        # test_acc = check_class_accuracy(model, val_loader,
+        #                                 threshold=config.CONF_THRESHOLD)
+        tpred_boxes, ttrue_boxes = get_evaluation_bboxes(
+            train_loader,
+            model,
+            iou_threshold=config.NMS_IOU_THRESH,
+            anchors=config.ANCHORS,
+            threshold=config.CONF_THRESHOLD,
+        )
+        tmapval = mean_average_precision(
+            tpred_boxes,
+            ttrue_boxes,
+            iou_threshold=config.MAP_IOU_THRESH,
+            box_format="midpoint",
+            num_classes=config.CLASS_NUM,
+        )
+        print(f"Train | Precision: {tmapval[0]}, Recall: {tmapval[1]}, mAP: {tmapval[2]}")
+        
+        vpred_boxes, vtrue_boxes = get_evaluation_bboxes(
             val_loader,
             model,
             iou_threshold=config.NMS_IOU_THRESH,
             anchors=config.ANCHORS,
             threshold=config.CONF_THRESHOLD,
         )
-        mapval = mean_average_precision(
-            pred_boxes,
-            true_boxes,
+        vmapval = mean_average_precision(
+            vpred_boxes,
+            vtrue_boxes,
             iou_threshold=config.MAP_IOU_THRESH,
             box_format="midpoint",
             num_classes=config.CLASS_NUM,
         )
-        print(f"mAP: {mapval.item()}")
+        print(f"Validation | Precision: {vmapval[0]}, Recall: {vmapval[1]}, mAP: {vmapval[2]}")
         model.train()
-        history.append([loss, val_loss, *train_acc, *test_acc, mapval])
+        history.append([loss, val_loss, *tmapval, *vmapval])
     save_checkpoint(model, optimizer, filename=f"checkpoint.pth.tar")
     check_class_accuracy(model, train_loader,
                          threshold=config.CONF_THRESHOLD)
@@ -176,7 +196,7 @@ def main():
         num_classes=config.CLASS_NUM,
     )
 
-    with open('history2.txt', 'w') as f:
+    with open('history.txt', 'w') as f:
         f.write(str(history))
 
 

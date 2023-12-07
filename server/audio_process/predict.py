@@ -1,11 +1,11 @@
 import torch
 from torch.utils.data import DataLoader
-from model import CNNNetwork, AlexNet
+from .model import CNNNetwork, AlexNet
 from dataset import CryDataset
 from train import mel_spectrogram, step
 import os
 from sklearn.metrics import precision_score
-from audio_utils import CLASS_MAPPING, NUM_CLASSES
+from .audio_utils import CLASS_MAPPING, NUM_CLASSES
 
 
 def predict(model, input, target):

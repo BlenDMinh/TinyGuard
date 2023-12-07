@@ -97,6 +97,8 @@ def train(model, train_data_loader, test_data_loader, loss_fn, optimiser, device
         test_accs.append(test_acc)
         test_precisions.append(test_pre)
         test_recalls.append(test_rec)
+        if i % 10 == 0:
+            torch.save(cnn.state_dict(), f"cnnnet.{i}.pth")
     print("Finished training")
     return losses, accs, precisions, recalls, test_losses, test_accs, test_precisions, test_recalls
 

@@ -149,6 +149,9 @@ def mean_average_precision(
 
     # used for numerical stability later on
     epsilon = 1e-6
+    
+    cry_precisions = 0
+    cry_recalls = 0
 
     for c in range(num_classes):
         detections = []
@@ -226,12 +229,18 @@ def mean_average_precision(
         FP_cumsum = torch.cumsum(FP, dim=0)
         recalls = TP_cumsum / (total_true_bboxes + epsilon)
         precisions = TP_cumsum / (TP_cumsum + FP_cumsum + epsilon)
+        if c == 0 and len(precisions) > 0:
+            cry_precisions = precisions[-1].item()
+        if c == 0 and len(recalls) > 0:
+            cry_recalls = recalls[-1].item()
+        
         precisions = torch.cat((torch.tensor([1]), precisions))
         recalls = torch.cat((torch.tensor([0]), recalls))
         # torch.trapz for numerical integration
+        
         average_precisions.append(torch.trapz(precisions, recalls))
 
-    return sum(average_precisions) / len(average_precisions)
+    return cry_precisions, cry_recalls, (sum(average_precisions) / len(average_precisions)).item()
 
 
 def plot_image(image, boxes):

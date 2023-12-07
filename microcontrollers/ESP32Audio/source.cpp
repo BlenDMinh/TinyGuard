@@ -232,6 +232,44 @@ void i2s_adc_data_scale(uint8_t *d_buff, uint8_t *s_buff, uint32_t len)
     d_buff[j++] = dac_value * 256 / 2048;
   }
 }
+
+int intensityCheck() {
+
+  int i2s_read_len = 16 * 1024;
+  char *i2s_read_buff = (char *) calloc(i2s_read_len, sizeof(char));
+  size_t bytes_read;
+
+  if(i2s_read_buff == nullptr) {
+    free(i2s_read_buff);
+    i2s_read_buff = NULL;
+    return 0;
+  }
+
+  i2s_read(I2S_PORT, (void *)i2s_read_buff, i2s_read_len, &bytes_read, portMAX_DELAY);
+  if(i2s_read_buff == nullptr) {
+    free(i2s_read_buff);
+    i2s_read_buff = NULL;
+    return 0;
+  }
+
+  int peak = 0;
+
+  int16_t samples_read = bytes_read / 4;
+  if (samples_read > 0)
+  {
+    for (int16_t i = 0; i < samples_read; ++i)
+    {
+      if (i2s_read_buff[i]>>8 > peak)
+        peak=i2s_read_buff[i]>>8;
+    }
+  }
+
+  free(i2s_read_buff);
+  i2s_read_buff = NULL;
+
+  return peak;
+}
+
 void micTask(void *parameter)
 {
 
@@ -241,6 +279,11 @@ void micTask(void *parameter)
   size_t bytesIn = 0;
   while (1)
   {
+    if(WiFi.status() != WL_CONNECTED)
+      continue;
+    int intensity = intensityCheck();
+    Serial.println(intensity);
+    continue;
     String result = sendAudio();
     DynamicJsonDocument doc(200);
     DeserializationError error = deserializeJson(doc, result);
@@ -255,6 +298,7 @@ void micTask(void *parameter)
     } else {
       is_crying = false;
     }
+    delay(10);
   }
 }
 float angle = 0;
@@ -293,5 +337,6 @@ void servoTask(void *parameter) {
     } else {
       lerpTo(0);
     }
+    delay(10);
   }
 }
