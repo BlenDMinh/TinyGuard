@@ -1,4 +1,4 @@
-import 'package:tinyguard/service/esp32_cam.dart';
+import 'package:tinyguard/model/datasource/remote/service/esp32_cam.dart';
 
 enum Component { esp32Camera, bluetoothUtil }
 

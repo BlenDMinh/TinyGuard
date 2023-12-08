@@ -22,7 +22,7 @@ const int headerSize = 44;
 
 #include <ESP32Servo.h>
 #include <math.h>
-#define SERVO_PIN 2
+#define SERVO_PIN 14
 float A = 45;
 float OFFSET = A;
 float G = 9.8;
@@ -278,12 +278,14 @@ void micTask(void *parameter)
   size_t bytesIn = 0;
   while (1)
   {
-    // if(WiFi.status() != WL_CONNECTED)
-    //   continue;
+    if(WiFi.status() != WL_CONNECTED)
+      continue;
     float intensity = intensityCheck();
     Serial.println(intensity);
-    if (intensity < 300)
+    if (intensity < 200) {
+      is_crying = false;
       continue;
+    }
     String result = sendAudio();
     DynamicJsonDocument doc(200);
     DeserializationError error = deserializeJson(doc, result);
@@ -294,7 +296,7 @@ void micTask(void *parameter)
     }
     String label = doc["result"]["prediction"];
     Serial.println(label);
-    if (label == "Crying")
+    if (label == "Cry")
     {
       is_crying = true;
     }
@@ -323,9 +325,9 @@ void lerpTo(float target, float weight = 0.5, float eps = 1e-3, int delay_time =
   }
 }
 
-void swing_step(float &angle, float &vtheta, float time_step = 0.001)
+void swing_step(float &angle, float &vtheta, float time_step = 0.01)
 {
-  float atheta = -G / L * sin(angle);
+  float atheta = -G / L * sin(angle * 3.14 / 180.0);
   vtheta += atheta * time_step;
   angle += vtheta * time_step;
 }
@@ -344,6 +346,8 @@ void servoTask(void *parameter)
         swing_step(angle, vtheta);
         int servoAngle = (int)angle;
         servo.write((int)OFFSET + servoAngle);
+        Serial.print("Swinging ");
+        Serial.println(servoAngle);
         delay(20);
       }
     }
@@ -351,6 +355,6 @@ void servoTask(void *parameter)
     {
       lerpTo(0);
     }
-    delay(10);
+    delay(20);
   }
 }

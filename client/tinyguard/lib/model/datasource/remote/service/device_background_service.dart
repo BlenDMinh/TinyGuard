@@ -1,9 +1,6 @@
 import 'dart:async';
 import 'dart:io';
 import 'dart:ui';
-
-import 'package:audioplayers/audioplayers.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_background_service/flutter_background_service.dart';
 import 'package:flutter_background_service_android/flutter_background_service_android.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
@@ -125,8 +122,8 @@ class DeviceBackgroundService {
         isForegroundMode: true,
 
         notificationChannelId: 'tinyguard_foreground_service',
-        initialNotificationTitle: 'TinyGuard alert service',
-        initialNotificationContent: 'Initializing',
+        initialNotificationTitle: 'TinyGuard Alert Service',
+        initialNotificationContent: 'Welcome to TinyGuard',
         foregroundServiceNotificationId: 888,
       ),
       iosConfiguration: IosConfiguration(

@@ -1,4 +1,3 @@
-import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -6,14 +5,13 @@ import 'package:flutter_mjpeg/flutter_mjpeg.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get_it/get_it.dart';
 import 'package:tinyguard/const/app_colors.dart';
+import 'package:tinyguard/model/datasource/remote/service/esp32_cam.dart';
 import 'package:tinyguard/model/repository/device_repository.dart';
 import 'package:tinyguard/flavor_config.dart';
-import 'package:tinyguard/service/device_background_service.dart';
 import 'package:tinyguard/view/views/base/base_view.dart';
 import 'package:tinyguard/view_models/monitor_view_model.dart';
 import 'package:tinyguard/view/shared/widget/bounding_box.dart';
 import 'package:tinyguard/view/shared/widget/ui_button_transparent.dart';
-import '../../../../service/esp32_cam.dart';
 import '../../../../view/shared/widget/container.dart';
 
 class MonitorScreen extends StatefulWidget {

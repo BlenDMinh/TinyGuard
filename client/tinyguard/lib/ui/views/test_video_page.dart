@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_mjpeg/flutter_mjpeg.dart';
-import 'package:tinyguard/service/esp32_cam.dart';
+import 'package:tinyguard/model/datasource/remote/service/esp32_cam.dart';
 import 'package:tinyguard/widget/container.dart';
 
 class TestVideoPage extends StatefulWidget {

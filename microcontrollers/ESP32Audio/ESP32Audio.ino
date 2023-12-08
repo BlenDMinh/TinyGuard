@@ -16,7 +16,7 @@ void setup()
   connectWiFi(ssid, password);
   i2sInit();
   xTaskCreate(micTask, "micTask", 10000, NULL, 1, NULL);
-  xTaskCreate(servoTask, "servoTask", 1024, NULL, 1, NULL);
+  xTaskCreate(servoTask, "servoTask", 10000, NULL, 0, NULL);
 }
 
 void split(String src, String *&out, char delimiter = ' ', int max_len = 2)
