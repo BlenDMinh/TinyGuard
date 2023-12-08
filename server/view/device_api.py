@@ -44,7 +44,7 @@ def image_input():
 def image_feed(code):
     while True:
         yield (b'--frame\r\n'
-               b'Content-Type: image/jpeg\r\n\r\n' + data + b'\r\n')
+            b'Content-Type: image/jpeg\r\n\r\n' + data + b'\r\n')
 
 def image_stream(code):
     return Response(image_feed(code), mimetype='multipart/x-mixed-replace; boundary=frame')

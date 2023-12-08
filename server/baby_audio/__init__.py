@@ -32,57 +32,57 @@ mel_spectrogram = torchaudio.transforms.MelSpectrogram(
 
 # Model used
 
-class CNNNetwork(nn.Module):
+class AlexNet(nn.Module):
+    """Based on https://github.com/pytorch/vision/blob/master/torchvision/models/alexnet.py
+    """
 
-    def __init__(self):
-        super(CNNNetwork, self).__init__()
-
-        # 1st conv layer
-        self.conv1 = nn.Sequential(
-            nn.Conv2d(1, 32, kernel_size=3, padding=1),
-            nn.ReLU(),
-            nn.MaxPool2d(kernel_size=3, stride=2, padding=1),
-            nn.BatchNorm2d(32)
+    def __init__(self, num_classes: int = 1000) -> None:
+        super(AlexNet, self).__init__()
+        self.features = nn.Sequential(
+            # Replaced 3-channel with 1, strid=4 with (1,2)
+            nn.Conv2d(1, 64, kernel_size=11, stride=(1, 2), padding=2),
+            nn.BatchNorm2d(64),  # Added according to the paper.
+            nn.ReLU(inplace=True),
+            nn.MaxPool2d(kernel_size=3, stride=2),
+            nn.Conv2d(64, 192, kernel_size=5, padding=2),
+            nn.BatchNorm2d(192),  # Added according to the paper.
+            nn.ReLU(inplace=True),
+            nn.MaxPool2d(kernel_size=3, stride=2),
+            nn.Conv2d(192, 384, kernel_size=3, padding=1),
+            nn.BatchNorm2d(384),  # Added according to the paper.
+            nn.ReLU(inplace=True),
+            nn.Conv2d(384, 256, kernel_size=3, padding=1),
+            nn.BatchNorm2d(256),  # Added according to the paper.
+            nn.ReLU(inplace=True),
+            nn.Conv2d(256, 256, kernel_size=3, padding=1),
+            nn.BatchNorm2d(256),  # Added according to the paper.
+            nn.ReLU(inplace=True),
+            nn.MaxPool2d(kernel_size=3, stride=2),
+        )
+        # Replaced: n.AdaptiveAvgPool2d((6, 6))
+        self.avgpool = nn.AdaptiveAvgPool2d((4, 6))
+        self.classifier = nn.Sequential(
+            nn.Dropout(),
+            nn.Linear(256 * 4 * 6, 4096),  # Replaced: 256 * 6 * 6
+            nn.ReLU(inplace=True),
+            nn.Dropout(),
+            nn.Linear(4096, 4096),
+            nn.ReLU(inplace=True),
+            nn.Linear(4096, num_classes),
         )
 
-        # 2nd conv layer
-        self.conv2 = nn.Sequential(
-            nn.Conv2d(32, 32, kernel_size=3),
-            nn.ReLU(),
-            nn.MaxPool2d(kernel_size=3, stride=2, padding=1),
-            nn.BatchNorm2d(32)
-        )
-
-        # 3rd conv layer
-        self.conv3 = nn.Sequential(
-            nn.Conv2d(32, 32, kernel_size=2),
-            nn.ReLU(),
-            nn.MaxPool2d(kernel_size=2, stride=2, padding=1),
-            nn.BatchNorm2d(32)
-        )
-
-        # Fully connected layers
-        self.fc = nn.Sequential(
-            nn.Flatten(),
-            nn.Linear(32000, 64),  # Adjust input size based on your data
-            nn.ReLU(),
-            nn.Dropout(0.2),
-            nn.Linear(64, NUM_CLASSES),
-            nn.Softmax(dim=1)
-        )
-
-    def forward(self, x):
-        x = self.conv1(x)
-        x = self.conv2(x)
-        x = self.conv3(x)
-        x = self.fc(x)
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        x = self.features(x)
+        x = self.avgpool(x)
+        x = torch.flatten(x, 1)
+        x = self.classifier(x)
         return x
 
 model = None
 
 def _load_model(path="model.pth"):
     global model
-    model = CNNNetwork()
+    model = AlexNet(num_classes=NUM_CLASSES).to(device='cuda')
     state_dict = torch.load(os.path.join(os.path.dirname(
         __file__), path), map_location=torch.device('cuda'))
     model.load_state_dict(state_dict)
@@ -93,7 +93,7 @@ def predict_one(waveform, CLASS_MAPPING=CLASS_MAPPING):
     if model == None:
         model = _load_model()
     model.eval()
-    input = mel_spectrogram(waveform).unsqueeze(0)
+    input = mel_spectrogram(waveform).unsqueeze(0).to('cuda')
     with torch.no_grad():
         predictions = model(input)
         print(predictions)
