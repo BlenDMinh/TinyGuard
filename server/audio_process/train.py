@@ -83,6 +83,8 @@ def train(model, train_data_loader, test_data_loader, loss_fn, optimiser, device
     test_precisions = []
     test_recalls = []
     for i in range(epochs):
+        if (i % 5 == 0 and i!=0):
+          torch.save(model.state_dict(), f"audionet.{i}.pth")
         print(f"Epoch {i+1}")
         loss, acc, pre, rec = step(
             model, train_data_loader, loss_fn, optimiser, device)
@@ -102,27 +104,6 @@ def train(model, train_data_loader, test_data_loader, loss_fn, optimiser, device
     print("Finished training")
     return losses, accs, precisions, recalls, test_losses, test_accs, test_precisions, test_recalls
 
-
-mel_spectrogram = torchaudio.transforms.MFCC(
-    sample_rate=SAMPLE_RATE,
-    n_mfcc=30,
-    melkwargs={'n_fft': 1024,
-               'hop_length': HOP_LEN,
-               'win_length': WIN_LEN,
-               'n_mels': N_MELS,
-               'window_fn': torch.hamming_window}
-)
-
-mel_spectrogram = torchaudio.transforms.MFCC(
-    sample_rate=SAMPLE_RATE,
-    n_mfcc=30,
-    melkwargs={'n_fft': 1024,
-               'hop_length': HOP_LEN,
-               'win_length': WIN_LEN,
-               'n_mels': N_MELS,
-               'window_fn': torch.hamming_window}
-)
-
 if __name__ == "__main__":
     if torch.cuda.is_available():
         device = "cuda"
@@ -132,8 +113,8 @@ if __name__ == "__main__":
 
     # instantiating our dataset object and create data loader
 
-    train_ds = CryDataset(mel_spectrogram, device, csv_path='train_data.csv')
-    test_ds = CryDataset(mel_spectrogram, device, csv_path='val_data.csv')
+    train_ds = CryDataset(device, csv_path='train_data.csv')
+    test_ds = CryDataset(device, csv_path='val_data.csv')
     train_dataloader = create_data_loader(train_ds, BATCH_SIZE)
     test_dataloader = create_data_loader(test_ds, BATCH_SIZE)
 
@@ -151,11 +132,13 @@ if __name__ == "__main__":
                                                                                                      optimiser, device, EPOCHS)
 
     # save model
-    torch.save(cnn.state_dict(), "cnnnet.pth")
-    print("Trained feed forward net saved at cnnnet.pth")
+    torch.save(cnn.state_dict(), "audionet.pth")
+    print("Trained feed forward net saved at audionet.pth")
 
     with open('history.csv', 'w') as f:
+        column_headers = ['Train loss','Train accuracy','Train precision','Train recall','Validate loss','Validate accuracy','Validate precision','Validate recall']
         writer = csv.writer(f, lineterminator='\r')
+        writer.writerow(column_headers)
         writer.writerows(zip(losses, accs, precisions, recalls,
                          test_losses, test_accs, test_precisions, test_recalls))
 

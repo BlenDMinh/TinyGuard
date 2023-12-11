@@ -83,8 +83,8 @@ class AudioPredict:
         self.wav = truncate(wavform=wavform)
 
     def to_json(self, to_string: bool = False) -> dict[str, any] | str:
-        prediction = predict_one(waveform=self.wav)
-        json_obj = dict(prediction=prediction)
+        prediction, score = predict_one(waveform=self.wav)
+        json_obj = dict(prediction=prediction, score=score)
         if to_string:
             return json.dumps(json_obj)
         return json_obj

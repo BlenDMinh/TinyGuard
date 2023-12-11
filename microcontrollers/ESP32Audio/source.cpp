@@ -282,7 +282,7 @@ void micTask(void *parameter)
       continue;
     float intensity = intensityCheck();
     Serial.println(intensity);
-    if (intensity < 200) {
+    if (intensity < 200 && !is_crying) {
       is_crying = false;
       continue;
     }
@@ -334,6 +334,8 @@ void swing_step(float &angle, float &vtheta, float time_step = 0.01)
 
 void servoTask(void *parameter)
 {
+  pinMode(27, OUTPUT);
+  digitalWrite(27, HIGH);
   servoInit();
   while (1)
   {

@@ -9,7 +9,7 @@ from audio_utils import NUM_CLASSES
 
 class CNNNetwork(nn.Module):
 
-    def __init__(self):
+    def __init__(self, num_classes : int=10):
         super(CNNNetwork, self).__init__()
 
         # 1st conv layer
@@ -39,10 +39,10 @@ class CNNNetwork(nn.Module):
         # Fully connected layers
         self.fc = nn.Sequential(
             nn.Flatten(),
-            nn.Linear(32000, 64),  # Adjust input size based on your data
+            nn.Linear(16128, 64),  # Adjust input size based on your data
             nn.ReLU(),
             nn.Dropout(0.2),
-            nn.Linear(64, NUM_CLASSES),
+            nn.Linear(64, num_classes),
             nn.Softmax(dim=1)
         )
 
@@ -425,6 +425,7 @@ class AlexNet(nn.Module):
             nn.Linear(4096, 4096),
             nn.ReLU(inplace=True),
             nn.Linear(4096, num_classes),
+            nn.Softmax(dim=1)
         )
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:

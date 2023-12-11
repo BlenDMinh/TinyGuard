@@ -1,22 +1,23 @@
+import torch
+
+
 RAW = 'raw'
 CLEAN = 'clean'
 SAMPLE_RATE = 16000
-THRESHOLD = 0
 DELTA_TIME = 5
 CLASS_MAPPING = [
-    "Cat",
     "Cry",
-    "Dog",
     "Laugh",
-    "Rain",
     "Silence",
-    "Wind"
+    "Talk"
 ]
-BATCH_SIZE = 32
-EPOCHS = 100
-LEARNING_RATE = 0.0001
+NUM_CLASSES = len(CLASS_MAPPING)
+BATCH_SIZE = 64
+EPOCHS = 101
+LEARNING_RATE = 0.000002
 N_MELS = 64
-NFFT = 1024
+NFFT = 2048
+N_MFCC = 24
 HOP_LEN = int(10*(10**-3)*SAMPLE_RATE)
 WIN_LEN = int(30*(10**-3)*SAMPLE_RATE)
-NUM_CLASSES = len(CLASS_MAPPING)
+WIN_FN = torch.hamming_window

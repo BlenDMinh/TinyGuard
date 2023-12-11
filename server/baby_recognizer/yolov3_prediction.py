@@ -153,7 +153,7 @@ def predict(image, do_reverse_transform=True):
             for idx, (box) in enumerate(boxes_scale_i):
                 bboxes[idx] += box
     nms_boxes = non_max_suppression(
-        bboxes[0], iou_threshold=0.5, threshold=0.6, box_format="midpoint",
+        bboxes[0], iou_threshold=0.5, threshold=0.85, box_format="midpoint",
     )
     if do_reverse_transform:
         nms_boxes = map(lambda box: reverse_transform(image, box), nms_boxes)

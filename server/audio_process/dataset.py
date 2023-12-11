@@ -2,6 +2,7 @@ import os
 from torch.utils.data import Dataset
 import torchaudio
 import random
+from util import AudioUtil
 from audio_utils import CLASS_MAPPING
 import csv
 
@@ -9,12 +10,12 @@ import csv
 class CryDataset(Dataset):
 
     def __init__(self,
-                 transformation,
                  device,
                  csv_path):
         self.device = device
-        self.transformation = transformation.to(self.device)
+        self.transformation = AudioUtil.spectro_gram().to(self.device)
         self.annotations = []
+        self.shift_pct = 0.4
         with open(csv_path) as f:
             reader = csv.reader(f)
             for data in reader:
@@ -33,9 +34,11 @@ class CryDataset(Dataset):
         audio_sample_path = self._get_audio_sample_path(index)
         label = int(self._get_audio_sample_label(index))
         signal, sr = torchaudio.load(audio_sample_path)
-        signal = signal.to(self.device)
-        signal = self.transformation(signal)
-        return signal, label
+        shift_aud = AudioUtil.time_shift(signal, self.shift_pct)
+        shift_aud = shift_aud.to(self.device)
+        sgram = self.transformation(shift_aud)
+        aug_sgram = AudioUtil.spectro_augment(sgram, max_mask_pct=0.1, n_freq_masks=2, n_time_masks=2)
+        return aug_sgram, label
 
     def _get_audio_sample_path(self, index):
         return self.annotations[index][1]
@@ -48,6 +51,8 @@ if __name__ == "__main__":
     data = []
     classes = os.listdir("clean")
     for _cls in classes:
+        if _cls not in CLASS_MAPPING:
+            continue
         src_dir = os.path.join("clean", _cls)
         for fn in os.listdir(src_dir):
             data.append([CLASS_MAPPING.index(_cls), os.path.join(src_dir, fn)])

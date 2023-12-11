@@ -1,34 +1,75 @@
 import os
+import random
 import torch
 import torchaudio
 from torch import nn
+from torchaudio import transforms
 
-DELTA_TIME = 5
 SAMPLE_RATE = 16000
+DELTA_TIME = 5
 CLASS_MAPPING = [
-    # "Cat",
-    # "ChurchBell",
     "Cry",
-    # "Dog",
     "Laugh",
-    # "Rain",
-    "Silence",
-    # "WaterDrop",
-    # "Wind"
+    "Silence"
 ]
+NUM_CLASSES = len(CLASS_MAPPING)
+BATCH_SIZE = 64
+EPOCHS = 101
+LEARNING_RATE = 0.000002
 N_MELS = 64
 NFFT = 2048
+N_MFCC = 24
 HOP_LEN = int(10*(10**-3)*SAMPLE_RATE)
 WIN_LEN = int(30*(10**-3)*SAMPLE_RATE)
-NUM_CLASSES = len(CLASS_MAPPING)
+WIN_FN = torch.hamming_window
 
-mel_spectrogram = torchaudio.transforms.MelSpectrogram(
-    sample_rate=SAMPLE_RATE,
-    n_fft=NFFT,
-    hop_length=HOP_LEN,
-    win_length=WIN_LEN,
-    n_mels=N_MELS
-)
+class AudioUtil():
+  @staticmethod
+  def time_shift(sig, shift_limit):
+   _, sig_len = sig.shape
+   shift_amt = int(random.random() * shift_limit * sig_len)
+   return sig.roll(shift_amt)
+
+  @staticmethod
+  def spectro_gram():
+    spectrogram = torchaudio.transforms.MelSpectrogram(
+      sample_rate=SAMPLE_RATE,
+      n_fft=NFFT,
+      hop_length=HOP_LEN,
+      win_length=WIN_LEN,
+      n_mels=N_MELS,
+      window_fn=WIN_FN
+    )
+    # spectrogram = torchaudio.transforms.AmplitudeToDB()(spectrogram)
+    return (spectrogram)
+#   @staticmethod
+#   def spectro_gram():
+#     spectrogram = torchaudio.transforms.MFCC(
+#     sample_rate=SAMPLE_RATE,
+#     n_mfcc=N_MFCC,
+#     melkwargs={'n_fft': NFFT,
+#               'hop_length': HOP_LEN,
+#               'win_length': WIN_LEN,
+#               'n_mels': N_MELS,
+#               'window_fn': WIN_FN}
+#     )
+    return spectrogram
+
+  @staticmethod
+  def spectro_augment(spec, max_mask_pct=0.1, n_freq_masks=1, n_time_masks=1):
+    _, n_mels, n_steps = spec.shape
+    mask_value = spec.mean()
+    aug_spec = spec
+
+    freq_mask_param = max_mask_pct * n_mels
+    for _ in range(n_freq_masks):
+        aug_spec = transforms.FrequencyMasking(freq_mask_param)(aug_spec, mask_value)
+
+    time_mask_param = max_mask_pct * n_steps
+    for _ in range(n_time_masks):
+        aug_spec = transforms.TimeMasking(time_mask_param)(aug_spec, mask_value)
+
+    return aug_spec
 
 # Model used
 
@@ -69,6 +110,7 @@ class AlexNet(nn.Module):
             nn.Linear(4096, 4096),
             nn.ReLU(inplace=True),
             nn.Linear(4096, num_classes),
+            nn.Softmax(dim=1)
         )
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
@@ -93,13 +135,13 @@ def predict_one(waveform, CLASS_MAPPING=CLASS_MAPPING):
     if model == None:
         model = _load_model()
     model.eval()
-    input = mel_spectrogram(waveform).unsqueeze(0).to('cuda')
+    input = AudioUtil.spectro_gram()(waveform).unsqueeze(0).to('cuda')
     with torch.no_grad():
         predictions = model(input)
-        print(predictions)
         predicted_index = predictions[0].argmax(0)
         if predicted_index < 0 or predicted_index >= NUM_CLASSES:
             print("Predicted index is out of range.")
             return None
         predicted = CLASS_MAPPING[predicted_index]
-    return predicted
+    print(predictions)
+    return predicted, predictions[0][predicted_index].item()
