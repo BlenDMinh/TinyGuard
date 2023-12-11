@@ -1,4 +1,3 @@
-import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
 import 'package:tinyguard/model/datasource/remote/service/device_background_service.dart';
 import 'package:tinyguard/model/repository/user_repository.dart';

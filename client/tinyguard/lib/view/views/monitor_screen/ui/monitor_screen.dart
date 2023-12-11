@@ -80,7 +80,7 @@ class _MonitorScreenState extends State<MonitorScreen> {
                   stream:
                       '${FlavorConfig.instance.baseURL}device/test/image_stream',
                   isLive: true,
-                  error: ((contet, error, stack) => ElevatedButton(
+                  error: ((context, error, stack) => ElevatedButton(
                       onPressed: () {
                         setState(() {});
                       },

@@ -175,7 +175,7 @@ class DeviceBackgroundService {
 
     service.on("onCameraBabyCrying").listen((data) async {
       last = DateTime.now().millisecondsSinceEpoch;
-      AlarmPlayer.play();
+      //AlarmPlayer.play();
       final code = data?['id'] ?? '';
 
       if (data != null)
