@@ -348,8 +348,8 @@ void servoTask(void *parameter)
         swing_step(angle, vtheta);
         int servoAngle = (int)angle;
         servo.write((int)OFFSET + servoAngle);
-        Serial.print("Swinging ");
-        Serial.println(servoAngle);
+        // Serial.print("Swinging ");
+        // Serial.println(servoAngle);
         delay(20);
       }
     }

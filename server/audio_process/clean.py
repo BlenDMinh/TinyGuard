@@ -38,20 +38,16 @@ def save_sample(sample, rate, target_dir, fn, ix):
     torchaudio.save(dst_path, sample, rate, format="wav")
 
 
-def check_dir(path):
-    if os.path.exists(path) is False:
-        os.mkdir(path)
-
-
 def split_wavs():
-    check_dir(CLEAN)
-
+    if os.path.exists(CLEAN) is False:
+        os.mkdir(CLEAN)
     classes = os.listdir(RAW)
     for _cls in classes:
-        # if (_cls in ['Cat', 'Dog', 'Rain', 'Wind']):
-        #     continue
         target_dir = os.path.join(CLEAN, _cls)
-        check_dir(target_dir)
+        if os.path.exists(target_dir) is False:
+            os.mkdir(target_dir)
+        else:
+            continue
         src_dir = os.path.join(RAW, _cls)
         for fn in tqdm(os.listdir(src_dir)):
             src_fn = os.path.join(src_dir, fn)
