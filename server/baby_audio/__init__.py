@@ -9,13 +9,12 @@ SAMPLE_RATE = 16000
 DELTA_TIME = 5
 CLASS_MAPPING = [
     "Cry",
-    "Laugh",
-    "Silence"
+    "Other"
 ]
 NUM_CLASSES = len(CLASS_MAPPING)
 BATCH_SIZE = 64
 EPOCHS = 101
-LEARNING_RATE = 0.000002
+LEARNING_RATE = 0.00001
 N_MELS = 64
 NFFT = 2048
 N_MFCC = 24
@@ -23,119 +22,115 @@ HOP_LEN = int(10*(10**-3)*SAMPLE_RATE)
 WIN_LEN = int(30*(10**-3)*SAMPLE_RATE)
 WIN_FN = torch.hamming_window
 
+if torch.cuda.is_available():
+    device = "cuda"
+else:
+    device = "cpu"
+
+
 class AudioUtil():
-  @staticmethod
-  def time_shift(sig, shift_limit):
-   _, sig_len = sig.shape
-   shift_amt = int(random.random() * shift_limit * sig_len)
-   return sig.roll(shift_amt)
+    @staticmethod
+    def time_shift(sig, shift_limit):
+        _, sig_len = sig.shape
+        shift_amt = int(random.random() * shift_limit * sig_len)
+        return sig.roll(shift_amt)
 
-  @staticmethod
-  def spectro_gram():
-    spectrogram = torchaudio.transforms.MelSpectrogram(
-      sample_rate=SAMPLE_RATE,
-      n_fft=NFFT,
-      hop_length=HOP_LEN,
-      win_length=WIN_LEN,
-      n_mels=N_MELS,
-      window_fn=WIN_FN
-    )
-    # spectrogram = torchaudio.transforms.AmplitudeToDB()(spectrogram)
-    return (spectrogram)
-#   @staticmethod
-#   def spectro_gram():
-#     spectrogram = torchaudio.transforms.MFCC(
-#     sample_rate=SAMPLE_RATE,
-#     n_mfcc=N_MFCC,
-#     melkwargs={'n_fft': NFFT,
-#               'hop_length': HOP_LEN,
-#               'win_length': WIN_LEN,
-#               'n_mels': N_MELS,
-#               'window_fn': WIN_FN}
-#     )
-    return spectrogram
+    @staticmethod
+    def spectro_gram():
+        spectrogram = torchaudio.transforms.MelSpectrogram(
+            sample_rate=SAMPLE_RATE,
+            n_fft=NFFT,
+            hop_length=HOP_LEN,
+            win_length=WIN_LEN,
+            n_mels=N_MELS,
+            window_fn=WIN_FN
+        )
 
-  @staticmethod
-  def spectro_augment(spec, max_mask_pct=0.1, n_freq_masks=1, n_time_masks=1):
-    _, n_mels, n_steps = spec.shape
-    mask_value = spec.mean()
-    aug_spec = spec
+        return (spectrogram)
 
-    freq_mask_param = max_mask_pct * n_mels
-    for _ in range(n_freq_masks):
-        aug_spec = transforms.FrequencyMasking(freq_mask_param)(aug_spec, mask_value)
+    @staticmethod
+    def spectro_augment(spec, max_mask_pct=0.1, n_freq_masks=1, n_time_masks=1):
+        _, n_mels, n_steps = spec.shape
+        mask_value = spec.mean()
+        aug_spec = spec
 
-    time_mask_param = max_mask_pct * n_steps
-    for _ in range(n_time_masks):
-        aug_spec = transforms.TimeMasking(time_mask_param)(aug_spec, mask_value)
+        freq_mask_param = max_mask_pct * n_mels
+        for _ in range(n_freq_masks):
+            aug_spec = transforms.FrequencyMasking(
+                freq_mask_param)(aug_spec, mask_value)
 
-    return aug_spec
+        time_mask_param = max_mask_pct * n_steps
+        for _ in range(n_time_masks):
+            aug_spec = transforms.TimeMasking(
+                time_mask_param)(aug_spec, mask_value)
+
+        return aug_spec
 
 # Model used
 
-class AlexNet(nn.Module):
-    """Based on https://github.com/pytorch/vision/blob/master/torchvision/models/alexnet.py
+
+class VGGish(nn.Module):
+    """Based on:
+        https://github.com/harritaylor/torchvggish/blob/master/docs/_example_download_weights.ipynb
     """
 
-    def __init__(self, num_classes: int = 1000) -> None:
-        super(AlexNet, self).__init__()
+    def __init__(self, num_classes: int):  # Added num_classes
+        super(VGGish, self).__init__()
         self.features = nn.Sequential(
-            # Replaced 3-channel with 1, strid=4 with (1,2)
-            nn.Conv2d(1, 64, kernel_size=11, stride=(1, 2), padding=2),
-            nn.BatchNorm2d(64),  # Added according to the paper.
+            nn.Conv2d(1, 64, 3, 1, 1),
             nn.ReLU(inplace=True),
-            nn.MaxPool2d(kernel_size=3, stride=2),
-            nn.Conv2d(64, 192, kernel_size=5, padding=2),
-            nn.BatchNorm2d(192),  # Added according to the paper.
+            nn.MaxPool2d(2, 2),
+            nn.Conv2d(64, 128, 3, 1, 1),
             nn.ReLU(inplace=True),
-            nn.MaxPool2d(kernel_size=3, stride=2),
-            nn.Conv2d(192, 384, kernel_size=3, padding=1),
-            nn.BatchNorm2d(384),  # Added according to the paper.
+            nn.MaxPool2d(2, 2),
+            nn.Conv2d(128, 256, 3, 1, 1),
             nn.ReLU(inplace=True),
-            nn.Conv2d(384, 256, kernel_size=3, padding=1),
-            nn.BatchNorm2d(256),  # Added according to the paper.
+            nn.Conv2d(256, 256, 3, 1, 1),
             nn.ReLU(inplace=True),
-            nn.Conv2d(256, 256, kernel_size=3, padding=1),
-            nn.BatchNorm2d(256),  # Added according to the paper.
+            nn.MaxPool2d(2, 2),
+            nn.Conv2d(256, 512, 3, 1, 1),
             nn.ReLU(inplace=True),
-            nn.MaxPool2d(kernel_size=3, stride=2),
-        )
-        # Replaced: n.AdaptiveAvgPool2d((6, 6))
-        self.avgpool = nn.AdaptiveAvgPool2d((4, 6))
-        self.classifier = nn.Sequential(
-            nn.Dropout(),
-            nn.Linear(256 * 4 * 6, 4096),  # Replaced: 256 * 6 * 6
+            nn.Conv2d(512, 512, 3, 1, 1),
             nn.ReLU(inplace=True),
-            nn.Dropout(),
+            nn.AdaptiveMaxPool2d((4, 6)))  # Replaced: MaxPool2d(2,2)
+        self.embeddings = nn.Sequential(
+            nn.Linear(512*24, 4096),
+            nn.ReLU(inplace=True),
             nn.Linear(4096, 4096),
             nn.ReLU(inplace=True),
-            nn.Linear(4096, num_classes),
-            nn.Softmax(dim=1)
-        )
+            nn.Linear(4096, 128),
+            nn.ReLU(inplace=True))
+        self.head = nn.Linear(128, num_classes)  # Added
+        self.softmax = nn.Softmax(dim=1)
 
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
+    def forward(self, x):
         x = self.features(x)
-        x = self.avgpool(x)
-        x = torch.flatten(x, 1)
-        x = self.classifier(x)
+        x = x.view(x.size(0), -1)
+        x = self.embeddings(x)
+        x = self.head(x)  # Added
+        x = self.softmax(x)
         return x
+
 
 model = None
 
-def _load_model(path="model.pth"):
+
+def _load_model(path="audionet.70.pth"):
     global model
-    model = AlexNet(num_classes=NUM_CLASSES).to(device='cuda')
+    model = VGGish(num_classes=NUM_CLASSES).to(device=device)
     state_dict = torch.load(os.path.join(os.path.dirname(
-        __file__), path), map_location=torch.device('cuda'))
+        __file__), path), map_location=torch.device(device))
     model.load_state_dict(state_dict)
     return model
+
 
 def predict_one(waveform, CLASS_MAPPING=CLASS_MAPPING):
     global model
     if model == None:
         model = _load_model()
     model.eval()
-    input = AudioUtil.spectro_gram()(waveform).unsqueeze(0).to('cuda')
+    input = torchaudio.transforms.AmplitudeToDB(top_db=80)(
+        AudioUtil.spectro_gram()(waveform)).unsqueeze(0).to(device)
     with torch.no_grad():
         predictions = model(input)
         predicted_index = predictions[0].argmax(0)

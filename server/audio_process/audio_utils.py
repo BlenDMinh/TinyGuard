@@ -11,6 +11,7 @@ CLASS_MAPPING = [
     "Silence",
     "Talk"
 ]
+THRESHOLD = 0
 NUM_CLASSES = len(CLASS_MAPPING)
 BATCH_SIZE = 64
 EPOCHS = 101
