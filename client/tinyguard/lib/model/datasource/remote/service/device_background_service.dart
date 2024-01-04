@@ -7,6 +7,7 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:intl/intl.dart';
 import 'package:tinyguard/model/datasource/remote/entity/audio_predict_entity.dart';
 import 'package:tinyguard/model/datasource/remote/entity/image_predict_entity.dart';
+import 'package:tinyguard/model/datasource/remote/entity/predict_entity.dart';
 import 'package:tinyguard/model/datasource/remote/service/alarm_player.dart';
 import 'package:tinyguard/model/repository/device_repository.dart';
 
@@ -33,6 +34,8 @@ class DeviceBackgroundService {
   static bool isCameraCrying = false;
   static bool isMicroCrying = false;
   static const int interval = 10000;
+
+  static bool isCrying = false;
 
   static void onCameraPredict(ImagePredict predict) {
     if (isCameraCrying &&
@@ -68,11 +71,15 @@ class DeviceBackgroundService {
     }
   }
 
+  static void onCryingPredict(Predict predict) {
+    if (predict.is_crying) service.invoke("startWarning");
+  }
+
   static void addDevice(Device device) {
     _devices.add(device);
     _streams.add(device.image_predicts.stream.listen(onCameraPredict));
-
-    _streams.add(device.audio_streams.stream.listen(onMicroPredict));
+    _streams.add(device.predicts.stream.listen(onCryingPredict));
+    _streams.add(device.audio_predicts.stream.listen(onMicroPredict));
   }
 
   static void onReceiveResponse(NotificationResponse details) {
@@ -165,12 +172,20 @@ class DeviceBackgroundService {
       await AlarmPlayer.stop();
     });
 
+    service.on("crying").listen((event) {
+      isCrying = true;
+    });
+
     service.on("mute").listen((event) async {
       await AlarmPlayer.setVolume(0.0);
     });
 
     service.on("unmute").listen((event) async {
       await AlarmPlayer.setVolume(1.0);
+    });
+
+    service.on("startWarning").listen((event) {
+      AlarmPlayer.play();
     });
 
     service.on("onCameraBabyCrying").listen((data) async {
@@ -206,7 +221,6 @@ class DeviceBackgroundService {
 
     service.on("onMicroBabyCrying").listen((data) async {
       last = DateTime.now().millisecondsSinceEpoch;
-      AlarmPlayer.play();
       final code = data?['id'] ?? '';
 
       if (data != null)

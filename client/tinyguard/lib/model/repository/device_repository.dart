@@ -13,13 +13,15 @@ import 'package:flutter_background_service/flutter_background_service.dart';
 import 'package:flutter_background_service_android/flutter_background_service_android.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:tinyguard/model/datasource/remote/entity/predict_entity.dart';
 
 class Device {
   String code;
   IO.Socket _isocket;
   IO.Socket _asocket;
   final image_predicts = StreamController<ImagePredict>.broadcast();
-  final audio_streams = StreamController<AudioPredict>.broadcast();
+  final audio_predicts = StreamController<AudioPredict>.broadcast();
+  final predicts = StreamController<Predict>.broadcast();
 
   Device(this.code)
       : _isocket = IO.io("${FlavorConfig.instance.baseApiUrl}/${code}_i",
@@ -32,11 +34,15 @@ class Device {
       debugPrint("connected");
     });
     _isocket.on("ImagePrediction", (data) {
-      image_predicts.sink.add(ImagePredict.fromJson(data));
+      final predict = Predict.fromJson(data);
+      predicts.sink.add(predict);
+      image_predicts.sink.add(predict.image_predict);
       debugPrint(data.toString());
     });
     _asocket.on("AudioPrediction", (data) {
-      audio_streams.sink.add(AudioPredict.fromJson(data));
+      final predict = Predict.fromJson(data);
+      predicts.sink.add(predict);
+      audio_predicts.sink.add(predict.audio_predict);
       debugPrint(data.toString());
     });
   }

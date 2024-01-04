@@ -165,8 +165,8 @@ class _MonitorScreenState extends State<MonitorScreen> {
                                         width: 20.w,
                                       ),
                                       StreamBuilder(
-                                        stream:
-                                            widget.device!.audio_streams.stream,
+                                        stream: widget
+                                            .device!.audio_predicts.stream,
                                         builder: (context, predict) {
                                           return predict.hasData
                                               ? Text(
