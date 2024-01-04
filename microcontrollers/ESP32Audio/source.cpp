@@ -1,7 +1,7 @@
 #pragma once
 #include "header.h"
-char *ssid = "BEAN HONG COFFEE - 2.4Ghz";
-char *password = "11119999";
+String ssid = "BEAN HONG COFFEE - 2.4Ghz";
+String password = "11119999";
 String serverName = "192.168.5.22";
 String serverPath = "/api/device/audio_input";
 int serverPort = 5000;
@@ -57,7 +57,6 @@ void i2sInit()
 }
 void connectWiFi(const char *ssid, const char *password)
 {
-  Serial.println("Detected new network! Reconnecting...");
   WiFi.begin(ssid, password);
 
   while (WiFi.status() != WL_CONNECTED)
@@ -68,7 +67,7 @@ void connectWiFi(const char *ssid, const char *password)
     Serial.print(".");
   }
   Serial.println("");
-  Serial.println("WiFi connected");
+  Serial.println("LOG|WiFi connected");
 }
 void wavHeader(byte *header, int wavSize)
 {
@@ -275,7 +274,7 @@ void micTask(void *parameter)
   i2sInit();
   i2s_start(I2S_PORT);
 
-  size_t bytesIn = 0;
+  // size_t bytesIn = 0;
   while (1)
   {
     if(WiFi.status() != WL_CONNECTED)
@@ -287,21 +286,16 @@ void micTask(void *parameter)
       continue;
     }
     String result = sendAudio();
-    DynamicJsonDocument doc(200);
+    DynamicJsonDocument doc(1024);
     DeserializationError error = deserializeJson(doc, result);
     if (error)
     {
       Serial.println("Error decoding response");
       continue;
     }
-    String label = doc["result"]["prediction"];
-    Serial.println(label);
-    if (label == "Cry")
-    {
-      is_crying = true;
-    }
-    else
-    {
+    if(doc["result"].containsKey("is_crying")) {
+      is_crying = doc["result"]["is_crying"];
+    } else {
       is_crying = false;
     }
     delay(10);

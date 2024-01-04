@@ -26,7 +26,7 @@ def start_test():
     print(f"Using {device}")
     # load back the model
     cnn = AlexNet(num_classes=NUM_CLASSES)
-    state_dict = torch.load("audionet.90.pth", map_location=torch.device(device))
+    state_dict = torch.load("audionet.pth", map_location=torch.device(device))
     cnn.load_state_dict(state_dict)
 
     ds = CryDataset(device=device, csv_path='test_data.csv')

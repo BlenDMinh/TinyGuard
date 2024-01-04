@@ -81,10 +81,30 @@ def truncate(wavform):
 class AudioPredict:
     def __init__(self, wavform) -> None:
         self.wav = truncate(wavform=wavform)
+        self.prediction = None
+        self.score = None
+        self.prediction, self.score = predict_one(waveform=self.wav)
+        self.is_crying = self.prediction == "Cry"
 
     def to_json(self, to_string: bool = False) -> dict[str, any] | str:
-        prediction, score = predict_one(waveform=self.wav)
-        json_obj = dict(prediction=prediction, score=score)
+        json_obj = dict(prediction=self.prediction, score=self.score, is_crying=self.is_crying)
+        if to_string:
+            return json.dumps(json_obj)
+        return json_obj
+
+class Prediction:
+    def __init__(self, image_prediction: ImagePredict = None, audio_prediction: AudioPredict = None) -> None:
+        self.audio_prediction = audio_prediction
+        self.image_prediction = image_prediction
+    
+    def to_json(self, to_string: bool = False) -> dict[str, any] | str:
+        json_obj = dict(
+            audio_prediction=self.audio_prediction.to_json(to_string) if self.audio_prediction != None else None,
+            image_prediction=self.image_prediction.to_json(to_string) if self.image_prediction != None else None,
+        )
+        if self.image_prediction and self.audio_prediction:
+            json_obj["is_crying"] = self.audio_prediction.is_crying and self.image_prediction.is_crying
+            
         if to_string:
             return json.dumps(json_obj)
         return json_obj

@@ -8,8 +8,8 @@ extern String serverName;
 extern String serverPath;
 extern int serverPort;
 extern WiFiClient client;
-extern char *ssid;
-extern char *password;
+extern String ssid;
+extern String password;
 
 void i2s_adc_data_scale(uint8_t *d_buff, uint8_t *s_buff, uint32_t len);
 void micTask(void *parameter);

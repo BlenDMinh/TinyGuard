@@ -1,6 +1,5 @@
 #include "camera_web_server.h"
 #include "esp_camera.h"
-#include <WiFi.h>
 #include <WiFiClientSecure.h>
 #include "esp_wifi.h"
 #include "esp_timer.h"
@@ -11,8 +10,10 @@
 #include "soc/rtc_cntl_reg.h"
 #include "esp_http_server.h"
 
+String ssid = "BEAN HONG COFFEE - 2.4Ghz";
+String password = "11119999";
+
 String serverName = "192.168.5.165";
-String useSecure = "no";
 
 typedef struct
 {
@@ -61,10 +62,6 @@ String sendPhoto()
 {
   WiFiClient *_client = &client;
   int port = serverPort;
-  if(useSecure == "yes") {
-    _client = &client_secure;
-    port = 80;
-  }
 
   String getAll;
   String getBody;
@@ -227,11 +224,10 @@ void camTask(void *parameter)
 void webServerInit()
 {
   WRITE_PERI_REG(RTC_CNTL_BROWN_OUT_REG, 0);
-  connectWifi(DEFAULT_SSID, DEFAULT_PASSWORD);
   xTaskCreate(camTask, "camTask", 10000, NULL, 1, NULL);
 }
 
-void connectWifi(String ssid, String password)
+void connectWiFi(String ssid, String password)
 {
   Serial.println("Detecting new WiFi connection request! Reconnecting...");
   WiFi.disconnect();
@@ -289,22 +285,5 @@ void split(String src, String *&out, char delimiter = ' ', int max_len = 2)
 
 void webServerLoop()
 {
-  if (Serial.available())
-  {
-    String wifi = Serial.readString();
-    String *wifiData = NULL;
-    wifi.trim();
-    split(wifi.c_str(), wifiData, '|');
-    if (wifiData == NULL)
-    {
-      Serial.println("what");
-    }
-    connectWifi(wifiData[0].c_str(), wifiData[1].c_str());
-    startCameraServer();
 
-    Serial.print("Camera Ready! Use 'http://");
-    Serial.print(WiFi.localIP());
-    Serial.println("' to connect");
-  }
-  delay(100);
 }

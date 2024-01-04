@@ -17,7 +17,7 @@ checkpoint = torch.load(os.path.join(os.path.dirname(
         __file__), 'checkpoint.pth.tar'),
                         map_location=config.DEVICE)
 # checkpoint = torch.load('./model/checkpoint.pth.tar',
-                        # map_location=config.DEVICE)
+#                         map_location=config.DEVICE)
 model.load_state_dict(checkpoint["state_dict"])
 
 # image = np.array(Image.open(

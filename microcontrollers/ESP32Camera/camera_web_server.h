@@ -1,17 +1,17 @@
 #pragma once
-#include <Vector.h>
+#include <Arduino.h>
+#include <WiFi.h>
 
 #ifndef CAMERA_WEB_SERVER_H
 #define CAMERA_WEB_SERVER_H
 
-#define DEFAULT_SSID "BEAN HONG COFFEE - 2.4Ghz"
-#define DEFAULT_PASSWORD "11119999"
 extern String serverName;
-extern String useSecure;
 extern int serverPort;
-void connectWifi(String ssid, String password);
-Vector<String> split(String src, char delimiter);
+extern String ssid;
+extern String password;
+void connectWiFi(String ssid, String password);
 void webServerInit();
 void webServerLoop();
+void startCameraServer();
 
 #endif

@@ -6,15 +6,15 @@ import numpy as np
 import torch
 from PIL import Image
 from torch.utils.data import Dataset
-# from . import yolov3_config as config
-import yolov3_config as config
+from . import yolov3_config as config
+# import yolov3_config as config
 import albumentations as A
-# from .yolo3_utils import (
-#     iou_width_height as iou
-# )
-from yolo3_utils import (
+from .yolo3_utils import (
     iou_width_height as iou
 )
+# from yolo3_utils import (
+#     iou_width_height as iou
+# )
 
 
 class BabyDataset(Dataset):
