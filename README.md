@@ -25,3 +25,50 @@ TinyGuard is an application which provides the parental control with automation 
 
 ![Project System](https://i.imgur.com/5kqL6VO.png)
 
+## Getting Started
+### 1. AI Server
+Everything of the server is located inside **/server** folder
+```
+cd server
+```
+Install prerequisites
+```
+pip install -r requirements.txt
+```
+Server configurations can be edited inside **config.py** file. By default server is hosted on port 5000
+
+Run the server
+```
+py main.py
+```
+### 2. Microcontrollers
+Everything of the microcontrollers is located inside **/microcontrollers** folder
+
+For this part, you need 2 Arduino boards: **ESP32-CAM** and **ESP32 DEVKIT**, a microphone module, in this system we are using **I2S INMP441**, a servo module for the crib swinging automation.
+
+- **ESP32-CAM** will only capture and send image to the server for the image prediction.
+- **ESP32 DEVKIT** will record the audio and send to the server for the audio prediction, it will also receive the prediction result from the server and swing the crib according to the result.
+
+The schema of the microcontrollers can be seen and adjusted in the code.
+
+Open **Arduino IDE** and upload the project code: 
+- **ESP32Camera** to **ESP32-CAM**
+- **ESP32Audio** to **ESP32 DEVKIT**
+
+### 3. Client App
+Everything of the client app is located inside **/client** folder
+```
+cd client
+```
+Install prerequisites
+```
+flutter pub get
+```
+You can either run the application in emulator by:
+```
+flutter run lib/main.dart
+```
+or build the **.apk** file for production:
+```
+flutter build apk
+```
