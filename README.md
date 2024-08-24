@@ -40,17 +40,17 @@ TinyGuard is an application which provides the parental control with automation 
 ## Getting Started
 ### 1. AI Server
 Everything of the server is located inside **/server** folder
-```
+```bash
 cd server
 ```
 Install prerequisites
-```
+```bash
 pip install -r requirements.txt
 ```
 Server configurations can be edited inside **config.py** file. By default server is hosted on port 5000
 
 Run the server
-```
+```bash
 py main.py
 ```
 ### 2. Microcontrollers
@@ -69,18 +69,18 @@ Open **Arduino IDE** and upload the project code:
 
 ### 3. Client App
 Everything of the client app is located inside **/client** folder
-```
+```bash
 cd client
 ```
 Install prerequisites
-```
+```bash
 flutter pub get
 ```
 You can either run the application in emulator by:
-```
+```bash
 flutter run lib/main.dart
 ```
 or build the **.apk** file for production:
-```
+```bash
 flutter build apk
 ```
