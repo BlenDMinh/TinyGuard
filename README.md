@@ -21,6 +21,18 @@ TinyGuard is an application which provides the parental control with automation 
 2. **Automatically Swing:** Automatically swing the baby's crib if the baby is crying, attemp to comfort the baby.
 3. **Surveillance Camera:** Monitoring your baby from afar from the mobile application.
 
+## Client Application Demo
+<div align='center'>
+    <img src='https://github.com/user-attachments/assets/89244574-e852-4dd0-bfc3-cc0d65fe10bf' width=250 />
+    <img src='https://github.com/user-attachments/assets/deff67ad-3ee2-4912-adcd-a6694c1bf7df' width=250 />
+    <img src='https://github.com/user-attachments/assets/247213ab-df06-499e-b686-83ad450e54e1' width=250 />
+</div>
+<div align='center'>
+    <img src='https://github.com/user-attachments/assets/24098783-57f8-4807-87f1-99c6353ae5fe' height=250 />
+</div>
+
+
+
 ## Project System
 
 ![Project System](https://i.imgur.com/5kqL6VO.png)
